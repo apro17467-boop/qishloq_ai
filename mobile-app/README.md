@@ -451,5 +451,18 @@ Mobil ilovani APK ko'rinishida build qilish uchun Android qurish muhiti noldan m
 > [!NOTE]
 > Release imzolash (release signing) ishlari hali amalga oshirilmadi. Hozirgi bosqichda faqat debug APK build muhiti to'liq tayyorlandi.
 
-### Keyingi qadam (Step 61)
-- Loyihani real sharoitda sinab ko'rish uchun **Local pilot test** va test-run jarayoni.
+## Local Pilot Test (Step 61)
+
+Mobil ilovani local backend serverga ulanib ishlashini tekshirish uchun local test qilish bo'yicha tayyorgarlik yakunlandi.
+
+### Local Tarmoq va IP Sozlamalari:
+- **Asosiy server IP (wlo1 Wi-Fi):** `172.20.10.7`
+- **Emulator uchun standart URL:** `http://10.0.2.2:3000` (default)
+- **Real telefon uchun sozlanadigan URL:** `http://172.20.10.7:3000`
+
+### O'rnatish va Test-Run:
+- APK fayli `/home/xbmb/qishloq_loihasi/birinchi_urunish/qishloq-ai/mobile-app/build/app/outputs/flutter-apk/app-debug.apk` manzilida mavjud.
+- Batafsil sinovlarni amalga oshirish uchun maxsus [Local Pilot Test Checklist](file:///home/xbmb/.gemini/antigravity/brain/8d19965f-a63a-4d64-a65c-45c839ddd450/local_pilot_test_checklist.md) hujjati yaratildi. U orqali login, e'lon yaratish, rasm yuklash, mening e'lonlarim, AI maslahat va profil oqimlarini to'liq sinovdan o'tkazish mumkin.
+
+### Keyingi qadam (Step 62)
+- Local pilot test natijasida topilgan xatoliklarni tuzatish va foydalanuvchilar fikrlari asosida takomillashtirish.
