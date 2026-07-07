@@ -560,3 +560,34 @@ E'lon tafsilotlari sahifasi (`ListingDetailPage`) foydalanuvchilar uchun qulay v
 - `ListingService.createListing` va backend endpointlar o'zgartirilmadi.
 - Yaratilgandan keyingi success ekrani saqlandi: `Rasm qo'shish`, `Mening e'lonlarim`, `E'lonlar ro'yxatiga o'tish`, `Bosh sahifa`.
 - Image upload flow `/listings/:id/images` yaratilgan listing ID bilan ishlashda davom etadi.
+
+## My Listings UX Polish (Step 66)
+
+`MyListingsPage` foydalanuvchi kabinetiga mosroq va statuslarni tez tushunadigan ko'rinishga keltirildi:
+
+1. **Summary header:**
+   - Yuqorida `E'lonlaringiz` cardi qo'shildi.
+   - `GET /listings/my` javobidagi `meta.total` qiymati `N ta` ko'rinishida chiqariladi.
+   - Meta hali kelmagan holatda sarlavha `E'lonlaringiz ro'yxati` bo'lib turadi.
+2. **Status chips:**
+   - Barchasi / Moderatsiyada / Faol / Rad etilgan / Arxivda statuslari horizontal chip ko'rinishida chiqadi.
+   - Backend query qiymatlari o'zgarmadi: `null`, `PENDING`, `ACTIVE`, `REJECTED`, `ARCHIVED`.
+   - Tanlangan chip status rangida, tanlanmagan chip oq fonda kulrang border bilan ko'rinadi.
+3. **Marketplace card design:**
+   - Har bir e'lon 96x96 rasm preview, agro placeholder, title, narx, status badge, type badge, sana va hudud/manzil bilan ko'rsatiladi.
+   - Status badge ranglari: PENDING olovrang, ACTIVE yashil, REJECTED qizil, ARCHIVED kulrang.
+4. **Action row:**
+   - ACTIVE e'lonlarda `Ko'rish` public detailga (`/listings/:id`) olib boradi.
+   - PENDING va ACTIVE e'lonlarda `Rasm qo'shish` `/listings/:id/images` image upload flowiga olib boradi.
+   - REJECTED e'lonlarda `Rad sababi admin panelda`, ARCHIVED e'lonlarda `Arxivlangan` izohi ko'rsatiladi.
+   - Edit/archive yoki yangi action qo'shilmadi.
+5. **Empty/loading/error holatlar:**
+   - Loading uchun `AppLoadingState`, error uchun `AppErrorState`, bo'sh ro'yxat uchun `AppEmptyState` saqlandi.
+   - E'lon yo'q bo'lsa `E'lon joylash` actioni `/create-listing`ga olib boradi.
+   - Status filter sabab bo'sh bo'lsa tushunarli izoh chiqadi.
+6. **Pagination va API logic:**
+   - `Yana yuklash` buttoni `AppButton`ga o'tkazildi va loading paytida disabled/loading ko'rinadi.
+   - `ListingService.getMyListings`, `GET /listings/my`, query params (`page`, `limit`, `status`) va auth flow o'zgartirilmadi.
+
+### Keyingi qadam (Step 67)
+- Favorites funksiyasini qo'shish.
