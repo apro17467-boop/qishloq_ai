@@ -94,8 +94,22 @@ Ilovada API Client infratuzilmasi, Mobil Autentifikatsiya (OTP Request & Verify)
 - **Placeholder sahifalar:** `ListingsPlaceholderPage`, `CreateListingPlaceholderPage`, `AiAdvicePlaceholderPage` va `ProfilePlaceholderPage` yaratildi. Ularda ortga (Bosh sahifaga) qaytish tugmasi mavjud.
 - **E'lonlar ro'yxati:** Keyingi 52-qadamda backend bilan ulanadi.
 
-## Keyingi qadam (Step 52)
+### Mobile Listing list API (Step 52)
 
-- E'lonlar ro'yxatini backend API'ga ulash va filtrlarni sozlash.
+- **E'lonlar ro'yxati:** `GET /listings` endpointi orqali real vaqtda faol (ACTIVE) e'lonlar ro'yxatini yuklaydi.
+- **Filtrlash:**
+  - Search (Qidirish) input va Qidirish / Tozalash tugmalari (darhol request jo‘natmasdan, qidirish bosilganda 1-sahifadan yuklaydi).
+  - Type filter (Turi bo‘yicha dropdown: MACHINERY_RENT, PRODUCT_SALE, LIVESTOCK_SALE, MACHINERY_SALE, SERVICE).
+  - Category filter (Kategoriyalardan o‘tganda categoryId bo‘yicha filtrlash, chip ko‘rinishida tozalash imkoniyati bilan).
+- **Pagination (Yana yuklash):** Sahifalangan (paginated) ma'lumotlar bilan ishlash, keyingi sahifa mavjud bo'lganda (page < totalPages) ro'yxat pastida "Yana yuklash" tugmasi chiqadi.
+- **Card UI va Format Helperlari:**
+  - E'lon rasmlaridan birinchisi, agar rasm bo'lmasa placeholder icon ko'rsatiladi.
+  - Sarlavha, hudud, telefon raqam, e'lon turi va yaratilgan vaqti (o'qishga qulay formatda).
+  - Narx ko'rinishi: priceAmount bo'lsa `Amount Currency / Unit`, bo'lmasa `Narx kelishiladi`.
+  - Tapping: E'lon card ustiga bosilganda "E’lon tafsiloti 53-qadamda ulanadi." SnackBar chiqadi.
+
+## Keyingi qadam (Step 53)
+
+- E'lon tafsiloti (Listing detail) sahifasini ulash va real ma'lumotlarni ko‘rsatish.
 
 

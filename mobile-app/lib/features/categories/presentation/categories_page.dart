@@ -156,13 +156,7 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () {
-                        ScaffoldMessenger.of(context).clearSnackBars();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Listing list 52-qadamda ulanadi'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
+                        context.go('/listings?categoryId=${category.id}&categoryName=${Uri.encodeComponent(category.nameUz)}');
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),

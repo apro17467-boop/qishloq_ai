@@ -4,7 +4,7 @@ import 'package:qishloq_ai_mobile/features/auth/presentation/login_page.dart';
 import 'package:qishloq_ai_mobile/features/categories/presentation/categories_page.dart';
 import 'package:qishloq_ai_mobile/features/home/presentation/home_page.dart';
 import 'package:qishloq_ai_mobile/features/listings/presentation/create_listing_placeholder_page.dart';
-import 'package:qishloq_ai_mobile/features/listings/presentation/listings_placeholder_page.dart';
+import 'package:qishloq_ai_mobile/features/listings/presentation/listings_page.dart';
 import 'package:qishloq_ai_mobile/features/onboarding/presentation/onboarding_page.dart';
 import 'package:qishloq_ai_mobile/features/profile/presentation/profile_placeholder_page.dart';
 import 'package:qishloq_ai_mobile/features/splash/presentation/splash_page.dart';
@@ -34,7 +34,12 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/listings',
-      builder: (context, state) => const ListingsPlaceholderPage(),
+      builder: (context, state) {
+        final categoryId = state.uri.queryParameters['categoryId'];
+        final rawCategoryName = state.uri.queryParameters['categoryName'];
+        final categoryName = rawCategoryName != null ? Uri.decodeComponent(rawCategoryName) : null;
+        return ListingsPage(categoryId: categoryId, categoryName: categoryName);
+      },
     ),
     GoRoute(
       path: '/create-listing',
