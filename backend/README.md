@@ -560,3 +560,19 @@ SMS_TIMEOUT_MS=10000
   - OTP codes are never logged to the console/stdout to prevent credentials/security leaks.
   - Real SMS provider credentials must be configured securely on the deployment machine and should **never** be committed to git.
 
+### REST Chat MVP (Step 72)
+The backend includes a REST-based message system (`ChatModule`) that manages conversation threads and text-based messages:
+- **Conversation Threading**: Automagically threads discussions per `[listingId, buyerId, sellerId]`.
+- **Security & Access Control**: 
+  - Chat access requires valid JWT authentication.
+  - Participants are validated (`buyerId` and `sellerId`). Users cannot view message details or dispatch messages to threads they do not belong to.
+  - Self-chatting is blocked (buyer cannot be the listing owner).
+  - Conversations can only be initiated on `ACTIVE` listings.
+- **REST Endpoints**:
+  - `POST /conversations` - Start/retrieve a thread for a listing.
+  - `GET /conversations/my` - Fetch current user's active threads (inbox), sorted by `updatedAt` descending.
+  - `GET /conversations/:id/messages` - Retrieve messages inside a thread, sorted by `createdAt` ascending. Trigger reading indicator (`readAt` updates).
+  - `POST /conversations/:id/messages` - Send a text message to a conversation.
+- **Strict Validation**: Utilizes `class-validator` to enforce non-empty message bodies (up to 2000 characters) and query limits.
+
+

@@ -20,3 +20,10 @@ Step 70 — Real SMS OTP integration foundation
 - Error handling va secret validation sozlandi.
 - Mobile `LoginPage` va `RequestOtpResponse` modeli backward-compatible va production ready holatga keltirildi.
 - Testlar muvaffaqiyatli o'tdi, APK build muvaffaqiyatli yakunlandi.
+
+Step 71 — Chat preparation decision
+
+- REST message system (Variant A) va WebSocket chat (Variant B) variantlari to'liq solishtirildi.
+- MVP barqarorligi va tezroq integratsiya uchun **REST message system** (Variant A) tanlandi.
+- Batafsil ma'lumotlar uchun [Chat Architecture Decision Document](docs/CHAT_ARCHITECTURE_DECISION.md) yaratildi (DB modellar, endpointlar, mobile flowlar va xavfsizlik cheklistlari belgilandi).
+- Keyingi qadam (Step 72): REST chat backend foundation.

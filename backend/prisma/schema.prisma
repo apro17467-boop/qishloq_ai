@@ -65,6 +65,9 @@ model User {
   complaints  Complaint[]
   aiQuestions AiQuestion[]
   favorites   Favorite[]
+  buyerConversations  Conversation[] @relation("ConversationBuyer")
+  sellerConversations Conversation[] @relation("ConversationSeller")
+  sentMessages        Message[]      @relation("MessageSender")
 }
 
 model Profile {
@@ -138,6 +141,7 @@ model Listing {
   images        ListingImage[]
   complaints    Complaint[]
   favorites     Favorite[]
+  conversations Conversation[]
 
   @@index([status])
   @@index([type])
@@ -212,3 +216,39 @@ model OtpCode {
   @@index([expiresAt])
   @@index([consumedAt])
 }
+
+model Conversation {
+  id        String   @id @default(uuid())
+  listingId String
+  buyerId   String
+  sellerId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyer     User     @relation("ConversationBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  seller    User     @relation("ConversationSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@unique([listingId, buyerId, sellerId])
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([listingId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  senderId       String
+  body           String
+  createdAt      DateTime     @default(now())
+  readAt         DateTime?
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+}
+

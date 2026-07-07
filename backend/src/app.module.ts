@@ -12,6 +12,7 @@ import { HealthModule } from './health/health.module';
 import { ListingsModule } from './listings/listings.module';
 import { ReferenceModule } from './reference/reference.module';
 import { SellersModule } from './sellers/sellers.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { SellersModule } from './sellers/sellers.module';
     AiModule,
     FavoritesModule,
     SellersModule,
+    ChatModule,
   ],
   providers: [
     {

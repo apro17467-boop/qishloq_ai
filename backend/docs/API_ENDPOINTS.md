@@ -90,6 +90,13 @@
 - `POST /ai/questions`
 - `GET /ai/questions/my`
 
+## Chat (Step 72)
+
+- `POST /conversations` - Start or fetch conversation for a listing
+- `GET /conversations/my` - List current user conversations (inbox)
+- `GET /conversations/:id/messages` - Get messages in a conversation
+- `POST /conversations/:id/messages` - Send a message to a conversation
+
 ## Admin
 
 - `GET /admin/listings`
@@ -130,6 +137,11 @@ Authenticated user endpoints:
 - `POST /complaints`
 - `POST /ai/questions`
 - `GET /ai/questions/my`
+- `POST /conversations`
+- `GET /conversations/my`
+- `GET /conversations/:id/messages`
+- `POST /conversations/:id/messages`
+
 
 Admin-only endpoints:
 
