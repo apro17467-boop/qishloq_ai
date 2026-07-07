@@ -623,3 +623,26 @@ Favorites funksiyasi backend, database va Flutter mobile app bo'ylab qo'shildi:
 
 ### Keyingi qadam (Step 68)
 - Seller profile yoki Chat/contact flow.
+
+## Seller Profile / E'lon Egasi Profili (Step 68)
+
+Seller profile funksiyasi public ko'rinishda qo'shildi:
+
+1. **Route va data layer:**
+   - `/sellers/:sellerId` route yaratildi.
+   - `SellerService.getSellerProfile` `GET /sellers/:sellerId` bilan ishlaydi.
+   - `SellerService.getSellerListings` `GET /sellers/:sellerId/listings` orqali sellerning faol e'lonlarini pagination bilan yuklaydi.
+2. **Listing detail integratsiyasi:**
+   - `Listing` modeliga optional `seller` summary qo'shildi.
+   - `ListingDetailPage` ichida `E'lon egasi` cardi chiqadi va `Profilni ko'rish` tugmasi seller profile sahifasiga olib boradi.
+   - Telefon/contact logic o'zgartirilmadi; aloqa raqami faqat listing detail contact qismida qoladi.
+3. **SellerProfilePage:**
+   - Headerda initials avatar, ism, role, verified badge, region/address, faol e'lonlar soni va qo'shilgan sana ko'rsatiladi.
+   - Pastda `Faol e'lonlari` ro'yxati chiqadi.
+   - Listing card bosilganda `/listings/:id` detail sahifasiga o'tadi.
+   - Loading/error/empty holatlari reusable state widgetlar va app uslubiga mos ishlaydi.
+4. **Chegaralar:**
+   - Seller profile public, lekin maxfiy user fieldlari ko'rsatilmaydi.
+   - Chat, rating, review, payment, booking, notifications qo'shilmadi.
+   - Favorites flowga aralashilmadi; seller listing cardlarda heart toggle qo'shilmadi.
+   - Admin panelga tegilmadi.

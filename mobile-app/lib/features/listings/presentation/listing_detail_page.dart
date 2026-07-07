@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qishloq_ai_mobile/core/network/api_exception.dart';
 import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
-import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/features/listings/data/listing_models.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
 
@@ -29,11 +28,6 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final isAuthenticated = ref.read(authControllerProvider).isAuthenticated;
-      if (!isAuthenticated) {
-        context.go('/login');
-        return;
-      }
       _fetchDetail();
     });
   }
@@ -48,9 +42,10 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
     try {
       final service = ref.read(listingServiceProvider);
       final listing = await service.getListingDetail(widget.listingId);
-      final favoriteIds = await ref
-          .read(favoriteServiceProvider)
-          .getFavoriteIds();
+      final isAuthenticated = ref.read(authControllerProvider).isAuthenticated;
+      final favoriteIds = isAuthenticated
+          ? await ref.read(favoriteServiceProvider).getFavoriteIds()
+          : <String>[];
       setState(() {
         _listing = listing.copyWith(
           isFavorite: favoriteIds.contains(listing.id),
@@ -86,6 +81,10 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
   Future<void> _toggleFavorite() async {
     final listing = _listing;
     if (listing == null || _isFavoriteUpdating) return;
+    if (!ref.read(authControllerProvider).isAuthenticated) {
+      context.push('/login');
+      return;
+    }
 
     setState(() {
       _isFavoriteUpdating = true;
@@ -537,6 +536,101 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
     );
   }
 
+  Widget? _buildSellerCard(Listing listing) {
+    final seller = listing.seller;
+    if (seller == null || seller.id.isEmpty) {
+      return null;
+    }
+
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey[200]!),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'E’lon egasi',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.12),
+                  child: Icon(
+                    Icons.person_outline,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              seller.displayName,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (seller.isVerified == true) ...[
+                            const SizedBox(width: 6),
+                            Icon(
+                              Icons.verified_outlined,
+                              size: 18,
+                              color: Colors.green[700],
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        seller.roleLabel,
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => context.push('/sellers/${seller.id}'),
+                icon: const Icon(Icons.person_search_outlined, size: 18),
+                label: const Text('Profilni ko‘rish'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget? _buildBottomNavigationBar(Listing? listing) {
     if (listing == null) return null;
     final hasPhone =
@@ -605,15 +699,6 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
-    ref.listen<AuthState>(authControllerProvider, (previous, next) {
-      if (!next.isAuthenticated && next.isLoading == false) {
-        context.go('/login');
-      }
-    });
-
-    if (!authState.isAuthenticated) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
 
     return Scaffold(
       appBar: AppBar(
@@ -628,28 +713,32 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
             }
           },
         ),
-        actions: [
-          IconButton(
-            tooltip: _listing?.isFavorite == true
-                ? 'Sevimlilardan olish'
-                : 'Sevimlilarga qo‘shish',
-            onPressed: _listing == null || _isFavoriteUpdating
-                ? null
-                : _toggleFavorite,
-            icon: _isFavoriteUpdating
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Icon(
-                    _listing?.isFavorite == true
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: _listing?.isFavorite == true ? Colors.red : null,
-                  ),
-          ),
-        ],
+        actions: authState.isAuthenticated
+            ? [
+                IconButton(
+                  tooltip: _listing?.isFavorite == true
+                      ? 'Sevimlilardan olish'
+                      : 'Sevimlilarga qo‘shish',
+                  onPressed: _listing == null || _isFavoriteUpdating
+                      ? null
+                      : _toggleFavorite,
+                  icon: _isFavoriteUpdating
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Icon(
+                          _listing?.isFavorite == true
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: _listing?.isFavorite == true
+                              ? Colors.red
+                              : null,
+                        ),
+                ),
+              ]
+            : null,
       ),
       body: SafeArea(child: _buildBody()),
       bottomNavigationBar: _buildBottomNavigationBar(_listing),
@@ -682,6 +771,7 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
     }
 
     final images = listing.images ?? [];
+    final sellerCard = _buildSellerCard(listing);
 
     return SingleChildScrollView(
       child: Column(
@@ -703,6 +793,10 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
                 // Location Card
                 _buildLocationCard(listing),
                 const SizedBox(height: 16),
+                if (sellerCard != null) ...[
+                  sellerCard,
+                  const SizedBox(height: 16),
+                ],
                 // Contact Card
                 _buildContactCard(listing),
                 const SizedBox(height: 24),

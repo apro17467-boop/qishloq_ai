@@ -11,6 +11,7 @@ import 'package:qishloq_ai_mobile/features/listings/presentation/listing_image_u
 import 'package:qishloq_ai_mobile/features/listings/presentation/my_listings_page.dart';
 import 'package:qishloq_ai_mobile/features/onboarding/presentation/onboarding_page.dart';
 import 'package:qishloq_ai_mobile/features/profile/presentation/profile_page.dart';
+import 'package:qishloq_ai_mobile/features/sellers/presentation/seller_profile_page.dart';
 import 'package:qishloq_ai_mobile/features/splash/presentation/splash_page.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -67,6 +68,13 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/favorites',
       builder: (context, state) => const FavoritesPage(),
+    ),
+    GoRoute(
+      path: '/sellers/:sellerId',
+      builder: (context, state) {
+        final sellerId = state.pathParameters['sellerId'] ?? '';
+        return SellerProfilePage(sellerId: sellerId);
+      },
     ),
     GoRoute(
       path: '/ai-advice',

@@ -223,6 +223,17 @@ DELETE /favorites/:listingId
 
 Favorite qo'shish idempotent: e'lon allaqachon sevimlilarda bo'lsa ham xato qaytarmaydi. O'chirish ham idempotent: favorite mavjud bo'lmasa ham muvaffaqiyatli javob qaytaradi.
 
+## Public Seller API
+
+Seller profile endpointlari public ishlaydi va faqat xavfsiz public ma'lumotlarni qaytaradi. Seller profilida telefon raqam chiqmaydi; aloqa raqami faqat listing `contactPhone` fieldida qoladi.
+
+```bash
+GET /sellers/:sellerId
+GET /sellers/:sellerId/listings?page=1&limit=10
+```
+
+`GET /sellers/:sellerId/listings` faqat sellerning `ACTIVE` va o'chirilmagan e'lonlarini qaytaradi. Request JWT bilan kelsa, listinglarda `isFavorite` joriy userga mos hisoblanadi; tokensiz request ham ishlaydi.
+
 ## Pagination
 
 Paginated endpointlar umumiy `meta` formatidan foydalanadi:

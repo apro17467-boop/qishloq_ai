@@ -58,6 +58,64 @@ class ListingRegion {
   }
 }
 
+class ListingSeller {
+  final String id;
+  final String? fullName;
+  final String? role;
+  final bool? isVerified;
+
+  ListingSeller({required this.id, this.fullName, this.role, this.isVerified});
+
+  factory ListingSeller.fromJson(Map<String, dynamic> json) {
+    return ListingSeller(
+      id: json['id'] as String? ?? '',
+      fullName: json['fullName'] as String?,
+      role: json['role'] as String?,
+      isVerified: json['isVerified'] as bool?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'fullName': fullName,
+      'role': role,
+      'isVerified': isVerified,
+    };
+  }
+}
+
+extension ListingSellerHelpers on ListingSeller {
+  String get displayName {
+    final name = fullName?.trim();
+    if (name != null && name.isNotEmpty) {
+      return name;
+    }
+    return 'Foydalanuvchi';
+  }
+
+  String get roleLabel {
+    switch (role) {
+      case 'FARMER':
+        return 'Fermer';
+      case 'LIVESTOCK_OWNER':
+        return 'Chorvador';
+      case 'MACHINERY_OWNER':
+        return 'Texnika egasi';
+      case 'BUYER':
+        return 'Xaridor';
+      case 'AGRONOMIST':
+        return 'Agronom';
+      case 'VETERINARIAN':
+        return 'Veterinar';
+      case 'ADMIN':
+        return 'Admin';
+      default:
+        return role == null || role!.isEmpty ? 'Foydalanuvchi' : role!;
+    }
+  }
+}
+
 class Listing {
   final String id;
   final String type;
@@ -75,6 +133,7 @@ class Listing {
   final ListingRegion? region;
   final List<ListingImage>? images;
   final bool isFavorite;
+  final ListingSeller? seller;
 
   Listing({
     required this.id,
@@ -93,6 +152,7 @@ class Listing {
     this.region,
     this.images,
     this.isFavorite = false,
+    this.seller,
   });
 
   factory Listing.fromJson(Map<String, dynamic> json) {
@@ -125,6 +185,9 @@ class Listing {
           : null,
       images: imagesList,
       isFavorite: json['isFavorite'] as bool? ?? false,
+      seller: json['seller'] != null
+          ? ListingSeller.fromJson(json['seller'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -145,6 +208,7 @@ class Listing {
     ListingRegion? region,
     List<ListingImage>? images,
     bool? isFavorite,
+    ListingSeller? seller,
   }) {
     return Listing(
       id: id ?? this.id,
@@ -163,6 +227,7 @@ class Listing {
       region: region ?? this.region,
       images: images ?? this.images,
       isFavorite: isFavorite ?? this.isFavorite,
+      seller: seller ?? this.seller,
     );
   }
 
@@ -184,6 +249,7 @@ class Listing {
       'region': region?.toJson(),
       'images': images?.map((x) => x.toJson()).toList(),
       'isFavorite': isFavorite,
+      'seller': seller?.toJson(),
     };
   }
 }

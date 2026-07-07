@@ -11,6 +11,7 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { HealthModule } from './health/health.module';
 import { ListingsModule } from './listings/listings.module';
 import { ReferenceModule } from './reference/reference.module';
+import { SellersModule } from './sellers/sellers.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ReferenceModule } from './reference/reference.module';
     ComplaintsModule,
     AiModule,
     FavoritesModule,
+    SellersModule,
   ],
   providers: [
     {

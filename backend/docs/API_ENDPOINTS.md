@@ -32,6 +32,11 @@
 - `POST /favorites/:listingId`
 - `DELETE /favorites/:listingId`
 
+## Sellers
+
+- `GET /sellers/:sellerId`
+- `GET /sellers/:sellerId/listings`
+
 ## Complaints
 
 - `POST /complaints`
@@ -63,6 +68,8 @@ Public endpoints:
 - `GET /reference/regions`
 - `GET /listings`
 - `GET /listings/:id`
+- `GET /sellers/:sellerId`
+- `GET /sellers/:sellerId/listings`
 
 Authenticated user endpoints:
 

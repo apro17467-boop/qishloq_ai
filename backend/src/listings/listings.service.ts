@@ -68,6 +68,8 @@ const listingDetailSelect = {
     select: {
       id: true,
       phone: true,
+      role: true,
+      isVerified: true,
       profile: {
         select: {
           fullName: true,
@@ -156,6 +158,7 @@ type SerializedListingListItem = Omit<ListingListItem, 'priceAmount'> & {
 type SerializedListingDetailItem = Omit<ListingDetailItem, 'priceAmount'> & {
   priceAmount: string | null;
   isFavorite: boolean;
+  seller: ListingSellerSummary;
 };
 
 type SerializedCreatedListingItem = Omit<CreatedListingItem, 'priceAmount'> & {
@@ -171,6 +174,13 @@ export interface ListingsListResponse
 
 export interface ListingDetailResponse {
   data: SerializedListingDetailItem;
+}
+
+export interface ListingSellerSummary {
+  id: string;
+  fullName: string | null;
+  role: ListingDetailItem['owner']['role'];
+  isVerified: boolean;
 }
 
 export interface CreateListingResponse {
@@ -748,6 +758,12 @@ export class ListingsService {
       ...listing,
       priceAmount: listing.priceAmount?.toString() ?? null,
       isFavorite,
+      seller: {
+        id: listing.owner.id,
+        fullName: listing.owner.profile?.fullName ?? null,
+        role: listing.owner.role,
+        isVerified: listing.owner.isVerified,
+      },
     };
   }
 
