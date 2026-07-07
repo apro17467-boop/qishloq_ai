@@ -5,11 +5,7 @@ class ListingImage {
   final String url;
   final int? sortOrder;
 
-  ListingImage({
-    required this.id,
-    required this.url,
-    this.sortOrder,
-  });
+  ListingImage({required this.id, required this.url, this.sortOrder});
 
   factory ListingImage.fromJson(Map<String, dynamic> json) {
     return ListingImage(
@@ -20,11 +16,7 @@ class ListingImage {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'url': url,
-      'sortOrder': sortOrder,
-    };
+    return {'id': id, 'url': url, 'sortOrder': sortOrder};
   }
 }
 
@@ -33,11 +25,7 @@ class ListingCategory {
   final String nameUz;
   final String? slug;
 
-  ListingCategory({
-    required this.id,
-    required this.nameUz,
-    this.slug,
-  });
+  ListingCategory({required this.id, required this.nameUz, this.slug});
 
   factory ListingCategory.fromJson(Map<String, dynamic> json) {
     return ListingCategory(
@@ -48,11 +36,7 @@ class ListingCategory {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'nameUz': nameUz,
-      'slug': slug,
-    };
+    return {'id': id, 'nameUz': nameUz, 'slug': slug};
   }
 }
 
@@ -60,10 +44,7 @@ class ListingRegion {
   final String id;
   final String nameUz;
 
-  ListingRegion({
-    required this.id,
-    required this.nameUz,
-  });
+  ListingRegion({required this.id, required this.nameUz});
 
   factory ListingRegion.fromJson(Map<String, dynamic> json) {
     return ListingRegion(
@@ -73,10 +54,7 @@ class ListingRegion {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'nameUz': nameUz,
-    };
+    return {'id': id, 'nameUz': nameUz};
   }
 }
 
@@ -96,6 +74,7 @@ class Listing {
   final ListingCategory? category;
   final ListingRegion? region;
   final List<ListingImage>? images;
+  final bool isFavorite;
 
   Listing({
     required this.id,
@@ -113,13 +92,16 @@ class Listing {
     this.category,
     this.region,
     this.images,
+    this.isFavorite = false,
   });
 
   factory Listing.fromJson(Map<String, dynamic> json) {
     List<ListingImage>? imagesList;
     if (json['images'] != null) {
       final list = json['images'] as List<dynamic>;
-      imagesList = list.map((item) => ListingImage.fromJson(item as Map<String, dynamic>)).toList();
+      imagesList = list
+          .map((item) => ListingImage.fromJson(item as Map<String, dynamic>))
+          .toList();
     }
 
     return Listing(
@@ -135,9 +117,52 @@ class Listing {
       address: json['address'] as String?,
       createdAt: json['createdAt'] as String? ?? '',
       updatedAt: json['updatedAt'] as String?,
-      category: json['category'] != null ? ListingCategory.fromJson(json['category'] as Map<String, dynamic>) : null,
-      region: json['region'] != null ? ListingRegion.fromJson(json['region'] as Map<String, dynamic>) : null,
+      category: json['category'] != null
+          ? ListingCategory.fromJson(json['category'] as Map<String, dynamic>)
+          : null,
+      region: json['region'] != null
+          ? ListingRegion.fromJson(json['region'] as Map<String, dynamic>)
+          : null,
       images: imagesList,
+      isFavorite: json['isFavorite'] as bool? ?? false,
+    );
+  }
+
+  Listing copyWith({
+    String? id,
+    String? type,
+    String? status,
+    String? title,
+    String? description,
+    String? priceAmount,
+    String? priceCurrency,
+    String? unit,
+    String? contactPhone,
+    String? address,
+    String? createdAt,
+    String? updatedAt,
+    ListingCategory? category,
+    ListingRegion? region,
+    List<ListingImage>? images,
+    bool? isFavorite,
+  }) {
+    return Listing(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      status: status ?? this.status,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      priceAmount: priceAmount ?? this.priceAmount,
+      priceCurrency: priceCurrency ?? this.priceCurrency,
+      unit: unit ?? this.unit,
+      contactPhone: contactPhone ?? this.contactPhone,
+      address: address ?? this.address,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      category: category ?? this.category,
+      region: region ?? this.region,
+      images: images ?? this.images,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 
@@ -158,6 +183,7 @@ class Listing {
       'category': category?.toJson(),
       'region': region?.toJson(),
       'images': images?.map((x) => x.toJson()).toList(),
+      'isFavorite': isFavorite,
     };
   }
 }
@@ -166,14 +192,13 @@ class ListingListResponse {
   final List<Listing> data;
   final PaginatedMeta meta;
 
-  ListingListResponse({
-    required this.data,
-    required this.meta,
-  });
+  ListingListResponse({required this.data, required this.meta});
 
   factory ListingListResponse.fromJson(Map<String, dynamic> json) {
     final list = json['data'] as List<dynamic>? ?? [];
-    final items = list.map((item) => Listing.fromJson(item as Map<String, dynamic>)).toList();
+    final items = list
+        .map((item) => Listing.fromJson(item as Map<String, dynamic>))
+        .toList();
     final metaData = json['meta'] as Map<String, dynamic>? ?? {};
 
     return ListingListResponse(
@@ -323,5 +348,3 @@ class UploadListingImageResponse {
     );
   }
 }
-
-

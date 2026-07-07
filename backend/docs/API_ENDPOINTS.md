@@ -25,6 +25,13 @@
 - `PATCH /listings/:id/archive`
 - `POST /listings/:id/images`
 
+## Favorites
+
+- `GET /favorites/my`
+- `GET /favorites/ids`
+- `POST /favorites/:listingId`
+- `DELETE /favorites/:listingId`
+
 ## Complaints
 
 - `POST /complaints`
@@ -65,6 +72,10 @@ Authenticated user endpoints:
 - `PATCH /listings/:id`
 - `PATCH /listings/:id/archive`
 - `POST /listings/:id/images`
+- `GET /favorites/my`
+- `GET /favorites/ids`
+- `POST /favorites/:listingId`
+- `DELETE /favorites/:listingId`
 - `POST /complaints`
 - `POST /ai/questions`
 - `GET /ai/questions/my`

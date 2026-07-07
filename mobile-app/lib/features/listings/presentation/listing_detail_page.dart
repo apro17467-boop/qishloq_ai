@@ -11,10 +11,7 @@ import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
 class ListingDetailPage extends ConsumerStatefulWidget {
   final String listingId;
 
-  const ListingDetailPage({
-    super.key,
-    required this.listingId,
-  });
+  const ListingDetailPage({super.key, required this.listingId});
 
   @override
   ConsumerState<ListingDetailPage> createState() => _ListingDetailPageState();
@@ -26,6 +23,7 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
   int _statusCode = 200;
   Listing? _listing;
   int _currentImageIndex = 0;
+  bool _isFavoriteUpdating = false;
 
   @override
   void initState() {
@@ -50,8 +48,13 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
     try {
       final service = ref.read(listingServiceProvider);
       final listing = await service.getListingDetail(widget.listingId);
+      final favoriteIds = await ref
+          .read(favoriteServiceProvider)
+          .getFavoriteIds();
       setState(() {
-        _listing = listing;
+        _listing = listing.copyWith(
+          isFavorite: favoriteIds.contains(listing.id),
+        );
         _isLoading = false;
       });
     } on ApiException catch (e) {
@@ -78,6 +81,58 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
         duration: Duration(seconds: 2),
       ),
     );
+  }
+
+  Future<void> _toggleFavorite() async {
+    final listing = _listing;
+    if (listing == null || _isFavoriteUpdating) return;
+
+    setState(() {
+      _isFavoriteUpdating = true;
+      _listing = listing.copyWith(isFavorite: !listing.isFavorite);
+    });
+
+    try {
+      final service = ref.read(favoriteServiceProvider);
+      if (listing.isFavorite) {
+        await service.removeFavorite(listing.id);
+      } else {
+        await service.addFavorite(listing.id);
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            !listing.isFavorite
+                ? 'E’lon sevimlilarga qo‘shildi'
+                : 'E’lon sevimlilardan olib tashlandi',
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _listing = listing;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isFavoriteUpdating = false;
+        });
+      }
+    }
   }
 
   Widget _buildStatusBadge(String status) {
@@ -145,11 +200,7 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.agriculture,
-              size: 64,
-              color: Colors.green[300],
-            ),
+            Icon(Icons.agriculture, size: 64, color: Colors.green[300]),
             const SizedBox(height: 12),
             Text(
               'Rasm qo‘shilmagan',
@@ -253,9 +304,14 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
               children: [
                 // Type Badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -305,7 +361,11 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  const Icon(Icons.edit_calendar_outlined, size: 14, color: Colors.grey),
+                  const Icon(
+                    Icons.edit_calendar_outlined,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     'Yangilangan: ${_formatDate(listing.updatedAt!)}',
@@ -321,7 +381,8 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
   }
 
   Widget _buildDescriptionCard(Listing listing) {
-    final hasDesc = listing.description != null && listing.description!.trim().isNotEmpty;
+    final hasDesc =
+        listing.description != null && listing.description!.trim().isNotEmpty;
     return Card(
       elevation: 0,
       margin: EdgeInsets.zero,
@@ -336,10 +397,7 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
           children: [
             const Text(
               'Tavsif',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(
@@ -372,10 +430,7 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
           children: [
             const Text(
               'Joylashuv',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Row(
@@ -403,10 +458,7 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
                       ],
                       Text(
                         listing.address ?? 'Hudud ko‘rsatilmagan',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -420,7 +472,8 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
   }
 
   Widget _buildContactCard(Listing listing) {
-    final hasPhone = listing.contactPhone != null && listing.contactPhone!.trim().isNotEmpty;
+    final hasPhone =
+        listing.contactPhone != null && listing.contactPhone!.trim().isNotEmpty;
     return Card(
       elevation: 0,
       margin: EdgeInsets.zero,
@@ -435,10 +488,7 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
           children: [
             const Text(
               'Bog‘lanish',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Row(
@@ -451,7 +501,9 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    hasPhone ? listing.contactPhone! : 'Telefon raqam ko‘rsatilmagan',
+                    hasPhone
+                        ? listing.contactPhone!
+                        : 'Telefon raqam ko‘rsatilmagan',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -463,10 +515,16 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
                   TextButton.icon(
                     onPressed: () => _copyPhone(listing.contactPhone!),
                     icon: const Icon(Icons.copy, size: 16),
-                    label: const Text('Nusxalash', style: TextStyle(fontSize: 12)),
+                    label: const Text(
+                      'Nusxalash',
+                      style: TextStyle(fontSize: 12),
+                    ),
                     style: TextButton.styleFrom(
                       foregroundColor: Theme.of(context).colorScheme.primary,
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
@@ -481,15 +539,14 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
 
   Widget? _buildBottomNavigationBar(Listing? listing) {
     if (listing == null) return null;
-    final hasPhone = listing.contactPhone != null && listing.contactPhone!.trim().isNotEmpty;
+    final hasPhone =
+        listing.contactPhone != null && listing.contactPhone!.trim().isNotEmpty;
     if (!hasPhone) return null;
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.grey[200]!, width: 1),
-        ),
+        border: Border(top: BorderSide(color: Colors.grey[200]!, width: 1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -555,9 +612,7 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
     });
 
     if (!authState.isAuthenticated) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -573,25 +628,45 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
             }
           },
         ),
+        actions: [
+          IconButton(
+            tooltip: _listing?.isFavorite == true
+                ? 'Sevimlilardan olish'
+                : 'Sevimlilarga qo‘shish',
+            onPressed: _listing == null || _isFavoriteUpdating
+                ? null
+                : _toggleFavorite,
+            icon: _isFavoriteUpdating
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Icon(
+                    _listing?.isFavorite == true
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: _listing?.isFavorite == true ? Colors.red : null,
+                  ),
+          ),
+        ],
       ),
-      body: SafeArea(
-        child: _buildBody(),
-      ),
+      body: SafeArea(child: _buildBody()),
       bottomNavigationBar: _buildBottomNavigationBar(_listing),
     );
   }
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const AppLoadingState(
-        message: 'Tafsilotlar yuklanmoqda...',
-      );
+      return const AppLoadingState(message: 'Tafsilotlar yuklanmoqda...');
     }
 
     if (_errorMessage != null) {
       final isNotFound = _statusCode == 404;
       return AppErrorState(
-        title: isNotFound ? 'E’lon topilmadi yoki faol emas' : 'Xatolik yuz berdi',
+        title: isNotFound
+            ? 'E’lon topilmadi yoki faol emas'
+            : 'Xatolik yuz berdi',
         message: isNotFound ? null : _errorMessage,
         icon: isNotFound ? Icons.search_off : Icons.error_outline,
         retryLabel: 'Qayta urinish',

@@ -13,11 +13,7 @@ class ListingsPage extends ConsumerStatefulWidget {
   final String? categoryId;
   final String? categoryName;
 
-  const ListingsPage({
-    super.key,
-    this.categoryId,
-    this.categoryName,
-  });
+  const ListingsPage({super.key, this.categoryId, this.categoryName});
 
   @override
   ConsumerState<ListingsPage> createState() => _ListingsPageState();
@@ -38,6 +34,8 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
 
   final List<Listing> _listings = [];
   PaginatedMeta? _meta;
+  Set<String> _favoriteListingIds = {};
+  final Set<String> _favoriteUpdatingIds = {};
 
   final List<Map<String, String?>> _types = const [
     {'label': 'Barchasi', 'value': null},
@@ -66,7 +64,8 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
   @override
   void didUpdateWidget(covariant ListingsPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.categoryId != oldWidget.categoryId || widget.categoryName != oldWidget.categoryName) {
+    if (widget.categoryId != oldWidget.categoryId ||
+        widget.categoryName != oldWidget.categoryName) {
       setState(() {
         _categoryId = widget.categoryId;
         _categoryName = widget.categoryName;
@@ -108,12 +107,22 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
         categoryId: _categoryId,
         search: _searchQuery,
       );
+      final favoriteIds = await ref
+          .read(favoriteServiceProvider)
+          .getFavoriteIds();
+      final listings = response.data
+          .map(
+            (listing) =>
+                listing.copyWith(isFavorite: favoriteIds.contains(listing.id)),
+          )
+          .toList();
 
       setState(() {
         if (loadMore) {
           _currentPage = nextPage;
         }
-        _listings.addAll(response.data);
+        _favoriteListingIds = favoriteIds.toSet();
+        _listings.addAll(listings);
         _meta = response.meta;
         _isLoading = false;
         _isLoadingMore = false;
@@ -144,19 +153,84 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
 
   void _onSearchSubmitted() {
     setState(() {
-      _searchQuery = _searchController.text.trim().isEmpty ? null : _searchController.text.trim();
+      _searchQuery = _searchController.text.trim().isEmpty
+          ? null
+          : _searchController.text.trim();
     });
     _fetchListings(loadMore: false);
+  }
+
+  Future<void> _toggleFavorite(Listing listing) async {
+    if (_favoriteUpdatingIds.contains(listing.id)) return;
+
+    final wasFavorite = _favoriteListingIds.contains(listing.id);
+    final nextFavorite = !wasFavorite;
+
+    setState(() {
+      _favoriteUpdatingIds.add(listing.id);
+      _setListingFavoriteState(listing.id, nextFavorite);
+    });
+
+    try {
+      final service = ref.read(favoriteServiceProvider);
+      if (wasFavorite) {
+        await service.removeFavorite(listing.id);
+      } else {
+        await service.addFavorite(listing.id);
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            nextFavorite
+                ? 'E’lon sevimlilarga qo‘shildi'
+                : 'E’lon sevimlilardan olib tashlandi',
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _setListingFavoriteState(listing.id, wasFavorite);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _favoriteUpdatingIds.remove(listing.id);
+        });
+      }
+    }
+  }
+
+  void _setListingFavoriteState(String listingId, bool isFavorite) {
+    if (isFavorite) {
+      _favoriteListingIds.add(listingId);
+    } else {
+      _favoriteListingIds.remove(listingId);
+    }
+
+    final index = _listings.indexWhere((item) => item.id == listingId);
+    if (index != -1) {
+      _listings[index] = _listings[index].copyWith(isFavorite: isFavorite);
+    }
   }
 
   Widget _buildPlaceholderIcon() {
     return Container(
       color: Colors.green[50],
-      child: Icon(
-        Icons.agriculture,
-        color: Colors.green[300],
-        size: 36,
-      ),
+      child: Icon(Icons.agriculture, color: Colors.green[300], size: 36),
     );
   }
 
@@ -210,9 +284,7 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
 
   Widget _buildMainContent(bool hasMore) {
     if (_isLoading) {
-      return const AppLoadingState(
-        message: 'E‘lonlar yuklanmoqda...',
-      );
+      return const AppLoadingState(message: 'E‘lonlar yuklanmoqda...');
     }
 
     if (_errorMessage != null) {
@@ -251,7 +323,8 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
           }
 
           final listing = _listings[index];
-          final firstImage = (listing.images != null && listing.images!.isNotEmpty)
+          final firstImage =
+              (listing.images != null && listing.images!.isNotEmpty)
               ? listing.images!.first
               : null;
 
@@ -284,7 +357,8 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
                             ? Image.network(
                                 firstImage.url,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => _buildPlaceholderIcon(),
+                                errorBuilder: (context, error, stackTrace) =>
+                                    _buildPlaceholderIcon(),
                               )
                             : _buildPlaceholderIcon(),
                       ),
@@ -299,29 +373,71 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  listing.typeLabel,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).colorScheme.primary,
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.primary
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    listing.typeLabel,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ),
-                              Text(
-                                listing.formattedDate.split(' ').first, // Faqat sanani chiqarish
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.grey[500],
+                              const SizedBox(width: 6),
+                              IconButton(
+                                tooltip: listing.isFavorite
+                                    ? 'Sevimlilardan olish'
+                                    : 'Sevimlilarga qo‘shish',
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 32,
+                                  minHeight: 32,
                                 ),
+                                onPressed:
+                                    _favoriteUpdatingIds.contains(listing.id)
+                                    ? null
+                                    : () => _toggleFavorite(listing),
+                                icon: _favoriteUpdatingIds.contains(listing.id)
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Icon(
+                                        listing.isFavorite
+                                            ? Icons.favorite
+                                            : Icons.favorite_border,
+                                        color: listing.isFavorite
+                                            ? Colors.red
+                                            : Colors.grey[500],
+                                      ),
                               ),
                             ],
+                          ),
+                          Text(
+                            listing.formattedDate.split(' ').first,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey[500],
+                            ),
                           ),
                           const SizedBox(height: 8),
                           // Title
@@ -349,27 +465,44 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
                           // Location and optional contact
                           Row(
                             children: [
-                              const Icon(Icons.location_on_outlined, size: 12, color: Colors.grey),
+                              const Icon(
+                                Icons.location_on_outlined,
+                                size: 12,
+                                color: Colors.grey,
+                              ),
                               const SizedBox(width: 2),
                               Expanded(
                                 child: Text(
-                                  listing.address ?? listing.region?.nameUz ?? 'Hudud ko‘rsatilmagan',
-                                  style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                                  listing.address ??
+                                      listing.region?.nameUz ??
+                                      'Hudud ko‘rsatilmagan',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey[600],
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
                           ),
-                          if (listing.contactPhone != null && listing.contactPhone!.isNotEmpty) ...[
+                          if (listing.contactPhone != null &&
+                              listing.contactPhone!.isNotEmpty) ...[
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(Icons.phone_outlined, size: 12, color: Colors.grey),
+                                const Icon(
+                                  Icons.phone_outlined,
+                                  size: 12,
+                                  color: Colors.grey,
+                                ),
                                 const SizedBox(width: 2),
                                 Text(
                                   listing.contactPhone!,
-                                  style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey[600],
+                                  ),
                                 ),
                               ],
                             ),
@@ -397,15 +530,14 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
     });
 
     if (!authState.isAuthenticated) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final hasMore = _meta != null && _currentPage < _meta!.totalPages;
 
     // Active Filters and Clear Buttons
-    final hasActiveFilters = (_searchQuery != null && _searchQuery!.isNotEmpty) ||
+    final hasActiveFilters =
+        (_searchQuery != null && _searchQuery!.isNotEmpty) ||
         _selectedType != null ||
         (_categoryId != null && _categoryName != null);
 
@@ -442,13 +574,18 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
                           controller: _searchController,
                           decoration: InputDecoration(
                             hintText: 'E’lon qidirish...',
-                            prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                            prefixIcon: const Icon(
+                              Icons.search,
+                              color: Colors.grey,
+                            ),
                             border: InputBorder.none,
                             enabledBorder: InputBorder.none,
                             focusedBorder: InputBorder.none,
                             errorBorder: InputBorder.none,
                             disabledBorder: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                            ),
                             filled: false,
                           ),
                           onSubmitted: (_) => _onSearchSubmitted(),
@@ -458,9 +595,14 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
                         onPressed: _onSearchSubmitted,
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
-                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           minimumSize: Size.zero,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -475,7 +617,7 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
               const SizedBox(height: 12),
               // Type Chips Horizontal List
               _buildTypeChips(),
-              
+
               if (hasActiveFilters) ...[
                 const SizedBox(height: 8),
                 Row(
@@ -490,11 +632,22 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
                             Chip(
                               label: Text(
                                 'Kategoriya: $_categoryName',
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                              backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-                              side: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primary.withValues(alpha: 0.08),
+                              side: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withValues(alpha: 0.2),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                               padding: EdgeInsets.zero,
                               deleteIcon: const Icon(Icons.close, size: 14),
                               onDeleted: () {
@@ -513,11 +666,16 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
                             Chip(
                               label: Text(
                                 'Matn: $_searchQuery',
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                               backgroundColor: Colors.blue[50],
                               side: BorderSide(color: Colors.blue[200]!),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                               padding: EdgeInsets.zero,
                               deleteIcon: const Icon(Icons.close, size: 14),
                               onDeleted: () {
@@ -540,7 +698,10 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
                       ),
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.red[700],
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
@@ -550,9 +711,7 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
               ],
               const SizedBox(height: 12),
               // Main content area
-              Expanded(
-                child: _buildMainContent(hasMore),
-              ),
+              Expanded(child: _buildMainContent(hasMore)),
             ],
           ),
         ),

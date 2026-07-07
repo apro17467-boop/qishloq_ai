@@ -150,10 +150,12 @@ type ListingImageItem = Prisma.ListingImageGetPayload<{
 
 type SerializedListingListItem = Omit<ListingListItem, 'priceAmount'> & {
   priceAmount: string | null;
+  isFavorite: boolean;
 };
 
 type SerializedListingDetailItem = Omit<ListingDetailItem, 'priceAmount'> & {
   priceAmount: string | null;
+  isFavorite: boolean;
 };
 
 type SerializedCreatedListingItem = Omit<CreatedListingItem, 'priceAmount'> & {
@@ -289,6 +291,7 @@ export class ListingsService {
 
   async getListings(
     query: ListListingsQueryDto,
+    userId?: string,
   ): Promise<ListingsListResponse> {
     const pagination = getPaginationParams(query.page, query.limit);
     const where = this.buildPublicListingWhere(query);
@@ -306,8 +309,15 @@ export class ListingsService {
       }),
     ]);
 
+    const favoriteIds = await this.getFavoriteListingIds(
+      userId,
+      listings.map((listing) => listing.id),
+    );
+
     return {
-      data: listings.map((listing) => this.serializeListingListItem(listing)),
+      data: listings.map((listing) =>
+        this.serializeListingListItem(listing, favoriteIds.has(listing.id)),
+      ),
       meta: buildPaginationMeta(pagination.page, pagination.limit, total),
     };
   }
@@ -568,7 +578,10 @@ export class ListingsService {
     }
   }
 
-  async getListingById(id: string): Promise<ListingDetailResponse> {
+  async getListingById(
+    id: string,
+    userId?: string,
+  ): Promise<ListingDetailResponse> {
     const listing = await this.prisma.listing.findFirst({
       where: {
         id,
@@ -584,11 +597,13 @@ export class ListingsService {
 
     void this.incrementViewCount(id);
 
+    const favoriteIds = await this.getFavoriteListingIds(userId, [listing.id]);
+
     return {
       data: this.serializeListingDetailItem({
         ...listing,
         viewCount: listing.viewCount + 1,
-      }),
+      }, favoriteIds.has(listing.id)),
     };
   }
 
@@ -668,6 +683,29 @@ export class ListingsService {
     }
   }
 
+  private async getFavoriteListingIds(
+    userId: string | undefined,
+    listingIds: string[],
+  ): Promise<Set<string>> {
+    if (!userId || listingIds.length === 0) {
+      return new Set();
+    }
+
+    const favorites = await this.prisma.favorite.findMany({
+      where: {
+        userId,
+        listingId: {
+          in: listingIds,
+        },
+      },
+      select: {
+        listingId: true,
+      },
+    });
+
+    return new Set(favorites.map((favorite) => favorite.listingId));
+  }
+
   private hasUpdateFields(dto: UpdateListingDto): boolean {
     return Object.values(dto).some((value) => value !== undefined);
   }
@@ -693,19 +731,23 @@ export class ListingsService {
 
   private serializeListingListItem(
     listing: ListingListItem,
+    isFavorite = false,
   ): SerializedListingListItem {
     return {
       ...listing,
       priceAmount: listing.priceAmount?.toString() ?? null,
+      isFavorite,
     };
   }
 
   private serializeListingDetailItem(
     listing: ListingDetailItem,
+    isFavorite = false,
   ): SerializedListingDetailItem {
     return {
       ...listing,
       priceAmount: listing.priceAmount?.toString() ?? null,
+      isFavorite,
     };
   }
 

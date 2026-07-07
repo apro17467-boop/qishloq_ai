@@ -591,3 +591,35 @@ E'lon tafsilotlari sahifasi (`ListingDetailPage`) foydalanuvchilar uchun qulay v
 
 ### Keyingi qadam (Step 67)
 - Favorites funksiyasini qo'shish.
+
+## Favorites / Sevimlilar (Step 67)
+
+Favorites funksiyasi backend, database va Flutter mobile app bo'ylab qo'shildi:
+
+1. **Database va backend:**
+   - Prisma schema ichiga userga bog'langan `Favorite` modeli qo'shildi.
+   - `userId + listingId` unique bo'lib, bitta user bir listingni bir marta sevimliga qo'sha oladi.
+   - Favorite yozuvlari user yoki listing o'chsa cascade tarzda tozalanadi.
+2. **Backend API:**
+   - `GET /favorites/my` — login qilgan userning sevimli ACTIVE e'lonlarini pagination bilan qaytaradi.
+   - `GET /favorites/ids` — login qilgan user favorite qilgan listing ID larini array ko'rinishida qaytaradi.
+   - `POST /favorites/:listingId` — ACTIVE e'lonni sevimlilarga qo'shadi.
+   - `DELETE /favorites/:listingId` — e'lonni sevimlilardan olib tashlaydi.
+   - `GET /listings` va `GET /listings/:id` javoblariga authenticated user uchun `isFavorite` flag qo'shildi; public ishlash saqlandi.
+3. **Mobile UI:**
+   - `lib/features/favorites/data/favorite_service.dart` data layer yaratildi.
+   - Listing cardlarda yurakcha tugmasi qo'shildi.
+   - ListingsPage va DetailPage heart holati `GET /favorites/ids` orqali aniqlanadi.
+   - Listing detail AppBar ichida favorite toggle chiqadi.
+   - `/favorites` route va `FavoritesPage` qo'shildi.
+   - Profile tezkor harakatlarida `Sevimlilar` bo'limi qo'shildi.
+4. **Persist flow:**
+   - Favorite holati local-only emas, backendda saqlanadi.
+   - User qayta login qilganda sevimli listinglar API orqali qayta ko'rinadi.
+5. **Chegaralar:**
+   - Admin panelga tegilmadi.
+   - Payment, booking, chat, notifications, seller profile, listing edit/archive qo'shilmadi.
+   - Existing auth, listings, detail, create listing wizard, image upload, my listings, AI va profile flowlar saqlandi.
+
+### Keyingi qadam (Step 68)
+- Seller profile yoki Chat/contact flow.

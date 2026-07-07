@@ -7,10 +7,7 @@ class ApiClient {
   final Dio _dio;
   final TokenStorage tokenStorage;
 
-  ApiClient({
-    required this.tokenStorage,
-    Dio? dio,
-  })  : _dio = dio ?? Dio() {
+  ApiClient({required this.tokenStorage, Dio? dio}) : _dio = dio ?? Dio() {
     _dio.options.baseUrl = AppConfig.apiBaseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 15);
     _dio.options.receiveTimeout = const Duration(seconds: 15);
@@ -32,7 +29,10 @@ class ApiClient {
     );
   }
 
-  Future<dynamic> get(String path, {Map<String, dynamic>? queryParameters}) async {
+  Future<dynamic> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
     try {
       final response = await _dio.get(path, queryParameters: queryParameters);
       return response.data;
@@ -59,6 +59,15 @@ class ApiClient {
     }
   }
 
+  Future<dynamic> delete(String path, {Object? data}) async {
+    try {
+      final response = await _dio.delete(path, data: data);
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleDioException(e);
+    }
+  }
+
   Future<dynamic> uploadFile(
     String path, {
     required String fieldName,
@@ -67,22 +76,14 @@ class ApiClient {
     Map<String, dynamic>? data,
   }) async {
     try {
-      final file = await MultipartFile.fromFile(
-        filePath,
-        filename: fileName,
-      );
-      
-      final formData = FormData.fromMap({
-        fieldName: file,
-        ...?data,
-      });
+      final file = await MultipartFile.fromFile(filePath, filename: fileName);
+
+      final formData = FormData.fromMap({fieldName: file, ...?data});
 
       final response = await _dio.post(
         path,
         data: formData,
-        options: Options(
-          contentType: 'multipart/form-data',
-        ),
+        options: Options(contentType: 'multipart/form-data'),
       );
       return response.data;
     } on DioException catch (e) {
@@ -119,8 +120,6 @@ class ApiClient {
       );
     }
 
-    return const ApiException(
-      message: 'Internet aloqasini tekshiring',
-    );
+    return const ApiException(message: 'Internet aloqasini tekshiring');
   }
 }

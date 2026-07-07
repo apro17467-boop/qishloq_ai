@@ -7,6 +7,7 @@ import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/features/auth/data/auth_service.dart';
 import 'package:qishloq_ai_mobile/features/ai_advice/data/ai_question_service.dart';
 import 'package:qishloq_ai_mobile/features/categories/data/category_service.dart';
+import 'package:qishloq_ai_mobile/features/favorites/data/favorite_service.dart';
 import 'package:qishloq_ai_mobile/features/health/data/health_service.dart';
 import 'package:qishloq_ai_mobile/features/listings/data/listing_service.dart';
 import 'package:qishloq_ai_mobile/features/regions/data/region_service.dart';
@@ -47,6 +48,11 @@ final categoryServiceProvider = Provider<CategoryService>((ref) {
 final listingServiceProvider = Provider<ListingService>((ref) {
   final apiClient = ref.watch(apiClientProvider);
   return ListingService(apiClient);
+});
+
+final favoriteServiceProvider = Provider<FavoriteService>((ref) {
+  final apiClient = ref.watch(apiClientProvider);
+  return FavoriteService(apiClient);
 });
 
 final regionServiceProvider = Provider<RegionService>((ref) {

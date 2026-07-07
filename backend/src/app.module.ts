@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { ComplaintsModule } from './complaints/complaints.module';
 import { getRateLimitConfig } from './config/security.config';
 import { PrismaModule } from './database/prisma.module';
+import { FavoritesModule } from './favorites/favorites.module';
 import { HealthModule } from './health/health.module';
 import { ListingsModule } from './listings/listings.module';
 import { ReferenceModule } from './reference/reference.module';
@@ -22,6 +23,7 @@ import { ReferenceModule } from './reference/reference.module';
     AdminModule,
     ComplaintsModule,
     AiModule,
+    FavoritesModule,
   ],
   providers: [
     {

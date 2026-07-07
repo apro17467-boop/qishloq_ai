@@ -107,17 +107,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     if (authState.isLoading || _isRefreshing) {
       return Scaffold(
         appBar: AppBar(title: const Text('Mening profilim')),
-        body: const AppLoadingState(
-          message: 'Profil yuklanmoqda...',
-        ),
+        body: const AppLoadingState(message: 'Profil yuklanmoqda...'),
       );
     }
 
     // Not authenticated
     if (!authState.isAuthenticated || authState.user == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final user = authState.user!;
@@ -188,12 +184,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
     return Card(
       elevation: 0,
-      color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.35),
+      color: Theme.of(
+        context,
+      ).colorScheme.primaryContainer.withValues(alpha: 0.35),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.primaryContainer,
-        ),
+        side: BorderSide(color: Theme.of(context).colorScheme.primaryContainer),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -231,21 +227,21 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     user.phone,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onPrimaryContainer
-                          .withValues(alpha: 0.75),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onPrimaryContainer.withValues(alpha: 0.75),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 0.12),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -316,7 +312,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   ),
                 );
               },
-              child: const Icon(Icons.copy_outlined, size: 16, color: Colors.grey),
+              child: const Icon(
+                Icons.copy_outlined,
+                size: 16,
+                color: Colors.grey,
+              ),
             ),
           ],
         ),
@@ -354,7 +354,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         if (!hasData) ...[
           const SizedBox(height: 4),
           const AppInfoBox(
-            message: 'Profil ma\'lumotlari to\'liq emas. Profilni tahrirlash keyingi bosqichda qo\'shiladi.',
+            message:
+                'Profil ma\'lumotlari to\'liq emas. Profilni tahrirlash keyingi bosqichda qo\'shiladi.',
           ),
         ],
       ],
@@ -373,6 +374,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           icon: Icons.list_alt_outlined,
           label: 'Mening e\'lonlarim',
           onTap: () => context.go('/my-listings'),
+        ),
+        const Divider(height: 1),
+        _ActionTile(
+          icon: Icons.favorite_border,
+          label: 'Sevimlilar',
+          onTap: () => context.push('/favorites'),
         ),
         const Divider(height: 1),
         _ActionTile(
@@ -469,9 +476,11 @@ class _SectionCard extends StatelessWidget {
             // Section header
             Row(
               children: [
-                Icon(icon,
-                    size: 18,
-                    color: Theme.of(context).colorScheme.primary),
+                Icon(
+                  icon,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   title,
@@ -513,8 +522,7 @@ class _StatusRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label,
-            style: const TextStyle(fontSize: 13, color: Colors.grey)),
+        Text(label, style: const TextStyle(fontSize: 13, color: Colors.grey)),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -560,11 +568,12 @@ class _InfoRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label,
-                  style: const TextStyle(fontSize: 11, color: Colors.grey)),
+              Text(
+                label,
+                style: const TextStyle(fontSize: 11, color: Colors.grey),
+              ),
               const SizedBox(height: 2),
-              Text(value,
-                  style: const TextStyle(fontSize: 14)),
+              Text(value, style: const TextStyle(fontSize: 14)),
             ],
           ),
         ),
@@ -592,8 +601,11 @@ class _ActionTile extends StatelessWidget {
     return ListTile(
       dense: true,
       contentPadding: EdgeInsets.zero,
-      leading: Icon(icon,
-          size: 20, color: Theme.of(context).colorScheme.primary),
+      leading: Icon(
+        icon,
+        size: 20,
+        color: Theme.of(context).colorScheme.primary,
+      ),
       title: Text(label, style: const TextStyle(fontSize: 14)),
       trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
       onTap: onTap,

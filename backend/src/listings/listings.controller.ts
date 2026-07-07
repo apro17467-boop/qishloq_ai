@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { ListListingsQueryDto } from './dto/list-listings-query.dto';
@@ -68,10 +69,12 @@ export class ListingsController {
   }
 
   @Get()
+  @UseGuards(OptionalJwtAuthGuard)
   getListings(
     @Query() query: ListListingsQueryDto,
+    @CurrentUser() user?: AuthenticatedUser,
   ): Promise<ListingsListResponse> {
-    return this.listingsService.getListings(query);
+    return this.listingsService.getListings(query, user?.sub);
   }
 
   @Get('my')
@@ -157,9 +160,11 @@ export class ListingsController {
   }
 
   @Get(':id')
+  @UseGuards(OptionalJwtAuthGuard)
   getListingById(
     @Param('id', new ParseUUIDPipe()) id: string,
+    @CurrentUser() user?: AuthenticatedUser,
   ): Promise<ListingDetailResponse> {
-    return this.listingsService.getListingById(id);
+    return this.listingsService.getListingById(id, user?.sub);
   }
 }

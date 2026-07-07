@@ -14,10 +14,7 @@ class ListingService {
     String? regionId,
     String? search,
   }) async {
-    final Map<String, dynamic> queryParameters = {
-      'page': page,
-      'limit': limit,
-    };
+    final Map<String, dynamic> queryParameters = {'page': page, 'limit': limit};
 
     if (type != null && type.isNotEmpty) {
       queryParameters['type'] = type;
@@ -32,7 +29,10 @@ class ListingService {
       queryParameters['search'] = search;
     }
 
-    final response = await _apiClient.get('/listings', queryParameters: queryParameters);
+    final response = await _apiClient.get(
+      '/listings',
+      queryParameters: queryParameters,
+    );
     if (response is Map<String, dynamic>) {
       return ListingListResponse.fromJson(response);
     }
@@ -45,10 +45,7 @@ class ListingService {
     String? status,
     String? type,
   }) async {
-    final Map<String, dynamic> queryParameters = {
-      'page': page,
-      'limit': limit,
-    };
+    final Map<String, dynamic> queryParameters = {'page': page, 'limit': limit};
 
     if (status != null && status.isNotEmpty) {
       queryParameters['status'] = status;
@@ -57,7 +54,10 @@ class ListingService {
       queryParameters['type'] = type;
     }
 
-    final response = await _apiClient.get('/listings/my', queryParameters: queryParameters);
+    final response = await _apiClient.get(
+      '/listings/my',
+      queryParameters: queryParameters,
+    );
     if (response is Map<String, dynamic>) {
       return ListingListResponse.fromJson(response);
     }

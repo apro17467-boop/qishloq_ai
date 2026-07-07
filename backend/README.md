@@ -210,6 +210,19 @@ GET /listings/:id
 
 Public listing endpointlari faqat `ACTIVE` va o'chirilmagan e'lonlarni qaytaradi.
 
+## Favorites API
+
+Favorites endpointlari JWT auth talab qiladi va faqat joriy user ma'lumotlari bilan ishlaydi:
+
+```bash
+GET /favorites/my?page=1&limit=10
+GET /favorites/ids
+POST /favorites/:listingId
+DELETE /favorites/:listingId
+```
+
+Favorite qo'shish idempotent: e'lon allaqachon sevimlilarda bo'lsa ham xato qaytarmaydi. O'chirish ham idempotent: favorite mavjud bo'lmasa ham muvaffaqiyatli javob qaytaradi.
+
 ## Pagination
 
 Paginated endpointlar umumiy `meta` formatidan foydalanadi:
