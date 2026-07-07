@@ -66,3 +66,54 @@ export type DashboardStats = {
   activeListings: number;
   openComplaints: number;
 };
+
+export type ListingStatus = "PENDING" | "ACTIVE" | "REJECTED" | "ARCHIVED";
+
+export type ListingType =
+  | "MACHINERY_RENT"
+  | "PRODUCT_SALE"
+  | "LIVESTOCK_SALE"
+  | "MACHINERY_SALE"
+  | "SERVICE";
+
+export type AdminListing = {
+  id: string;
+  type: ListingType;
+  status: ListingStatus;
+  title: string;
+  description?: string | null;
+  priceAmount?: string | null;
+  priceCurrency?: string | null;
+  unit?: string | null;
+  contactPhone?: string | null;
+  address?: string | null;
+  createdAt: string;
+  updatedAt?: string | null;
+  category?: {
+    id: string;
+    nameUz: string;
+    slug: string;
+  } | null;
+  region?: {
+    id: string;
+    nameUz: string;
+  } | null;
+  owner?: {
+    id: string;
+    phone: string;
+    role?: UserRole;
+    profile?: {
+      fullName?: string | null;
+    } | null;
+  } | null;
+};
+
+export type AdminListingsQuery = {
+  page: number;
+  limit: number;
+  status?: ListingStatus | "";
+  type?: ListingType | "";
+  search?: string;
+};
+
+export type AdminListingsResponse = PaginatedResponse<AdminListing>;

@@ -79,10 +79,26 @@ The backend and admin panel must run at the same time for dashboard data to load
 
 Next step: connect listings, complaints, and users screens to real backend APIs.
 
+## Listings Page
+
+`/listings` shows admin listing data from the existing backend endpoint:
+
+- `GET /admin/listings`
+
+Supported UI controls:
+
+- Status filter: `PENDING`, `ACTIVE`, `REJECTED`, `ARCHIVED`
+- Type filter: `MACHINERY_RENT`, `PRODUCT_SALE`, `LIVESTOCK_SALE`, `MACHINERY_SALE`, `SERVICE`
+- Search input with explicit `Qidirish` and `Tozalash` buttons
+- Pagination with `Oldingi` and `Keyingi`
+
+Moderation actions are intentionally not connected yet. The table includes a disabled `Ko'rish` placeholder for the next step.
+
 ## Current Scope
 
 - Login screen connected to backend OTP auth
 - Protected dashboard with real backend totals
+- Protected listings table with filters and pagination
 - Admin layout shell
 - Shared UI primitives
 - API and environment helpers
