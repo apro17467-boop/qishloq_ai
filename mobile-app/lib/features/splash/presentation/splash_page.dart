@@ -1,10 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qishloq_ai_mobile/core/constants/app_constants.dart';
+import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_button.dart';
 
-class SplashPage extends StatelessWidget {
+class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
+
+  @override
+  ConsumerState<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends ConsumerState<SplashPage> {
+  bool _isLoading = false;
+
+  Future<void> _handleStart() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final isAuthenticated = await ref.read(authControllerProvider.notifier).checkAuth();
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (isAuthenticated) {
+        context.go('/home');
+      } else {
+        context.go('/onboarding');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,9 +73,8 @@ class SplashPage extends StatelessWidget {
               AppButton(
                 label: 'Boshlash',
                 fullWidth: true,
-                onPressed: () {
-                  context.go('/onboarding');
-                },
+                loading: _isLoading,
+                onPressed: _isLoading ? null : _handleStart,
               ),
             ],
           ),

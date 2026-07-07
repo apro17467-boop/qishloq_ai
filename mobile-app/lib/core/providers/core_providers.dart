@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:qishloq_ai_mobile/core/network/api_client.dart';
 import 'package:qishloq_ai_mobile/core/storage/token_storage.dart';
+import 'package:qishloq_ai_mobile/features/auth/application/auth_controller.dart';
+import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/features/auth/data/auth_service.dart';
 import 'package:qishloq_ai_mobile/features/health/data/health_service.dart';
 
@@ -27,4 +29,8 @@ final healthServiceProvider = Provider<HealthService>((ref) {
 final authServiceProvider = Provider<AuthService>((ref) {
   final apiClient = ref.watch(apiClientProvider);
   return AuthService(apiClient);
+});
+
+final authControllerProvider = NotifierProvider<AuthController, AuthState>(() {
+  return AuthController();
 });

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qishloq_ai_mobile/core/network/api_exception.dart';
 import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
+import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_button.dart';
 
 const Map<String, String> _rolesMap = {
@@ -39,6 +40,33 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   void initState() {
     super.initState();
     _phoneController = TextEditingController(text: '+998901234567');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkInitialAuth();
+    });
+  }
+
+  Future<void> _checkInitialAuth() async {
+    final authState = ref.read(authControllerProvider);
+    if (authState.isAuthenticated) {
+      if (mounted) {
+        context.go('/home');
+      }
+      return;
+    }
+
+    setState(() {
+      _isLoadingVerify = true;
+    });
+
+    final isAuthenticated = await ref.read(authControllerProvider.notifier).checkAuth();
+    if (mounted) {
+      setState(() {
+        _isLoadingVerify = false;
+      });
+      if (isAuthenticated) {
+        context.go('/home');
+      }
+    }
   }
 
   @override
@@ -157,6 +185,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           return;
         }
 
+        // Set authenticated state in AuthController
+        ref.read(authControllerProvider.notifier).setAuthenticatedFromLogin(user);
+
         setState(() {
           _successMessage = 'Muvaffaqiyatli kirdingiz';
         });
@@ -187,6 +218,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final showLoading = _isLoadingRequest || _isLoadingVerify;
+
+    // Listen to global AuthState changes for error messages (e.g. session expired)
+    ref.listen<AuthState>(authControllerProvider, (previous, next) {
+      if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
+        setState(() {
+          _errorMessage = next.errorMessage;
+        });
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -339,7 +379,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       labelText: 'Ism familiyangiz',
                       hintText: 'Ism familiyangiz',
                       border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.person_outline),
+                      prefixIcon: Icon(Icons.person_outlined),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -349,7 +389,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     decoration: const InputDecoration(
                       labelText: 'Sizning rolingiz',
                       border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.work_outline),
+                      prefixIcon: Icon(Icons.work_outlined),
                     ),
                     items: _rolesMap.entries.map((entry) {
                       return DropdownMenuItem<String>(
@@ -399,7 +439,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                 TextButton(
                   onPressed: () {
-                    context.go('/home');
+                    ScaffoldMessenger.of(context).clearSnackBars();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Demo rejim keyingi bosqichlarda qayta yoqiladi. Hozir login talab qilinadi.'),
+                        duration: Duration(seconds: 3),
+                      ),
+                    );
                   },
                   child: const Text(
                     'Demo davom etish',

@@ -38,9 +38,9 @@ flutter run
 - `/login` → LoginPage (Telefon raqam kiritish va Demo rejimda kirish)
 - `/home` → HomePage (Asosiy bo‘limlar - E'lonlar, AI maslahat, Profil)
 
-## API va Ma'lumotlar ulanishi (Step 46, 47 & 48)
+## API va Ma'lumotlar ulanishi (Step 46, 47, 48, 49 & 50)
 
-Ilovada API Client infratuzilmasi va Mobil Autentifikatsiya (OTP Request & Verify) tizimi to‘liq sozlandi.
+Ilovada API Client infratuzilmasi, Mobil Autentifikatsiya (OTP Request & Verify) hamda Auth State Management (Notifier, Protected Home & Logout) to‘liq sozlandi.
 
 ### Konfiguratsiya va Base URL
 
@@ -49,7 +49,7 @@ Ilovada API Client infratuzilmasi va Mobil Autentifikatsiya (OTP Request & Verif
 - **Localhost (Web/Desktop):** Local hostdan test qilish uchun `http://localhost:3000` ishlatilishi mumkin.
 - **Real Qurilma (Device):** Real telefondan test qilish uchun host kompyuter joylashgan Wi-Fi LAN IP manzili (masalan: `http://192.168.1.X:3000`) ko‘rsatilishi lozim.
 
-### Autentifikatsiya (Step 47 & 48)
+### Autentifikatsiya va Holat boshqaruvi (Step 47, 48, 49 & 50)
 
 - **OTP Request Endpoint:** `POST /auth/request-otp`
   - **Request Body:** `{"phone": "+998901234567"}`
@@ -60,29 +60,25 @@ Ilovada API Client infratuzilmasi va Mobil Autentifikatsiya (OTP Request & Verif
       "phone": "+998901234567",
       "code": "111111",
       "role": "FARMER",
-      "fullName": "Mobile User",
-      "address": "Mobile app"
+      "fullName": "Ali Valiyev",
+      "address": "Oqdaryo tumani"
     }
     ```
 - **Get Me Endpoint:** `GET /auth/me` (Token faolligini va foydalanuvchi ma'lumotlarini tekshirish uchun)
 - **Token Saqlash:** Muvaffaqiyatli verify bo‘lgandan keyin olingan `accessToken` xavfsiz tarzda `flutter_secure_storage` kutubxonasidan foydalanib `qishloq_ai_mobile_token` kaliti ostida saqlanadi.
-- **Foydalanuvchi faolligi:** `/auth/me` orqali olingan foydalanuvchi statusi tekshiriladi (`user.isActive`). Agar u faol bo‘lmasa (`isActive == false`), token o‘chiriladi va login sahifasida xatolik ko‘rsatilib `/home` sahifasiga o‘tish to‘xtatiladi.
-- **Demo Davom Etish:** Vaqtincha test rejimida `/home`ga token-siz o‘tish tugmasi saqlab qolindi.
+- **Auth State Management (Riverpod Notifier):** `AuthController` va `AuthState` sinflari yordamida ilova boshlanganda, login bo'lganda va logout qilinganda foydalanuvchi holati va tokenlar boshqariladi.
+- **Protected Home:** `HomePage` ochilganda va u ishga tushganda `checkAuth()` orqali token tekshiriladi. Token mavjud bo'lmasa yoki yaroqsiz bo'lsa, foydalanuvchi avtomatik ravishda `/login` sahifasiga qaytariladi. Loading vaqtida "Profil tekshirilmoqda..." ko'rsatiladi.
+- **Logout (Tizimdan chiqish):** `HomePage` tepa o'ng burchagidagi chiqish tugmasi bosilganda tasdiqlash dialogi ko'rsatiladi. Tasdiqlansa, token secure storage'dan o'chiriladi va state `unauthenticated` qilinib `/login`ga yo'naltiriladi.
+- **Demo Davom Etish:** Vaqtincha demo rejim yopildi. Bosilganda ogohlantiruvchi SnackBar chiqadi: "Demo rejim keyingi bosqichlarda qayta yoqiladi. Hozir login talab qilinadi."
 
 ### Kutubxonalar (Dependencies)
 
 - `dio`: HTTP requestlar, headerlar, timeoutlar va xatoliklarni boshqarish uchun.
 - `flutter_secure_storage`: Foydalanuvchi tokenlarini xavfsiz saqlash.
+- `flutter_riverpod`: Ilova holatini (Auth state, API client) reaktiv boshqarish uchun (Riverpod v3 Notifier arxitekturasi asosida).
 
-### ApiClient va Token Storage xususiyatlari
+## Keyingi qadam (Step 51)
 
-- `ApiClient` so'rov jo'natishdan oldin secure storagedan tokenni avtomatik o‘qib, `Authorization: Bearer <token>` headeriga qo‘shib yuboradi.
-- Backenddan qaytgan xatoliklar avtomatik `ApiException` tipiga o‘giriladi.
-- `HealthService` orqali `/health` endpointiga ulanish tekshiriladi.
-- **Debug:** `HomePage` ostidagi **"Backend holatini tekshirish"** tugmasi orqali local backend ishlayotganini /health orqali tekshirish mumkin.
-
-## Keyingi qadam (Step 49)
-
-- Ro'yxatdan o'tish jarayonida foydalanuvchi roli (FARMER, LIVESTOCK_OWNER va h.k.) va shaxsiy ma'lumotlarini to‘ldirish uchun Role/Profile formalarini yaratish va backend bilan integratsiya qilish.
+- Asosiy bo‘limlar (E'lonlar, AI maslahat, Mening profilim) uchun real ma'lumotlarni backend-dan olib kelish va integratsiya qilish.
 
 
