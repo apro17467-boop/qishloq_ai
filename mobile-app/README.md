@@ -106,10 +106,127 @@ Ilovada API Client infratuzilmasi, Mobil Autentifikatsiya (OTP Request & Verify)
   - E'lon rasmlaridan birinchisi, agar rasm bo'lmasa placeholder icon ko'rsatiladi.
   - Sarlavha, hudud, telefon raqam, e'lon turi va yaratilgan vaqti (o'qishga qulay formatda).
   - Narx ko'rinishi: priceAmount bo'lsa `Amount Currency / Unit`, bo'lmasa `Narx kelishiladi`.
-  - Tapping: E'lon card ustiga bosilganda "E’lon tafsiloti 53-qadamda ulanadi." SnackBar chiqadi.
+- **Navigatsiya:** E'lon card ustiga bosilganda `/listings/:id` route orqali tafsilot sahifasiga o'tadi.
 
-## Keyingi qadam (Step 53)
+### Mobile Listing detail (Step 53)
 
-- E'lon tafsiloti (Listing detail) sahifasini ulash va real ma'lumotlarni ko‘rsatish.
+- **Endpoint:** `GET /listings/:id` API so'rovi orqali e'lon tafsilotlarini yuklaydi.
+- **Rasm/Gallery:** Agar rasmlar bo'lsa `PageView` orqali ko'rsatiladi va `1/3` ko'rinishida joriy rasm indeksi yoziladi. Rasmlar bo'lmasa, chiroyli placeholder ko'rsatiladi.
+- **Asosiy ma'lumotlar:**
+  - Sarlavha, tur (type) va status (ACTIVE/PENDING va hokazo) badgelari.
+  - Narxi: `formattedPrice` helperi orqali (masalan, `5000 UZS / kg` yoki `Narx kelishiladi`).
+  - Kategoriya, hudud/manzil va yaratilgan/yangilangan sanalar.
+  - Tavsif (description).
+- **Bog'lanish:** E'lon egasining telefon raqami, "Nusxalash" tugmasi (Clipboard API orqali buferga nusxalaydi). Telefon call plugin hozircha qo'shilmagan.
+- **Xatoliklar:** 404 error (e'lon topilmaganda yoki nofaol bo'lganda) va boshqa xatoliklar chiroyli retry/back buttonlar bilan handle qilingan.
 
+### Mobile Create listing form (Step 54)
 
+- **Endpoint:** `POST /listings` API orqali e'lon yaratadi. So'rov yuborishda faqat backend qabul qiladigan aniq fieldlar yuboriladi va bo'sh optional fieldlar tozalanadi.
+- **Avtomatik Auth Header:** ApiClient orqali Bearer token avtomatik headerga qo'shiladi.
+- **Kategoriya va Hududlar:**
+  - `/reference/categories` va `/reference/regions` dan ma'lumotlar yuklanadi.
+  - Kategoriya tanlanganda e'lon turi (`type`) avtomatik tarzda uning `category.type` qiymatiga tenglashtiriladi va UI-da ko'rsatiladi.
+- **Manzil va Aloqa:**
+  - Hudud tanlash (tanlanmagan / ixtiyoriy).
+  - Tizimga kirgan foydalanuvchining telefon raqami default bog'lanish telefoni sifatida avtomatik formda ko'rsatiladi.
+- **Form Maydonlari va Validation:**
+  - Sarlavha (majburiy, 3-120 belgi).
+  - Tavsif (ixtiyoriy, max 2000 belgi).
+  - Narx (ixtiyoriy, 0 dan katta son bo'lishi tekshiriladi).
+  - Bog'lanish telefoni (`+998XXXXXXXXX` formatda bo'lishi tekshiriladi).
+- **Muvaffaqiyatli Holat (Success Screen):**
+  - E'lon yaratilgach, status PENDING holatida bo'lishi to'g'risida ma'lumot beruvchi yashil oyna ochiladi.
+  - "Rasm qo‘shish", "E'lonlar ro'yxatiga o'tish" va "Bosh sahifaga qaytish" navigatsiya tugmalari taqdim etiladi.
+- **Image Upload & My Listings:** Ushbu bosqichda form yaratildi, rasm yuklash 55-qadamda va shaxsiy e'lonlarni boshqarish keyingi qadamlarda ulanadi.
+
+### Mobile Image Upload (Step 55)
+
+- **Endpoint:** `POST /listings/:id/images` API orqali rasmlarni yuklaydi.
+- **Multipart Field:** `image` (backend kutgan aniq field nomi).
+- **Rasm tanlash (image_picker):**
+  - Gallery'dan bir vaqtning o'zida bir nechta rasm tanlash uchun `pickMultiImage` ishlatiladi.
+  - Maksimal 5 ta rasm yuklashga cheklov qo'yilgan.
+- **File Validation (Frontend):**
+  - File extension: faqat `.jpg`, `.jpeg`, `.png`, `.webp` formatlari qabul qilinadi.
+  - File size: har bir rasm hajmi 5MB dan oshmasligi tekshiriladi (XFile.length() orqali).
+- **Upload Flow:**
+  - Tanlangan rasmlar ro'yxatida preview va o'chirish imkoniyati mavjud.
+  - "Yuklash" bosilganda rasmlar ketma-ket (sequential) upload qilinadi va `1/3 rasm yuklanmoqda...` ko'rinishida progress ma'lumoti yangilanib turadi.
+  - Muvaffaqiyatli yuklansa yashil success banner, xatolik bo'lsa qizil error banner ko'rsatiladi.
+  - Yuklash jarayonida tugmalar va interaction blocklanadi.
+- **Auth Protection:** Sahifa faqat token bo'lgandagina ochiq bo'ladi, aks holda `/login` ga yo'naltiradi.
+- **Router Integratsiyasi:** `/listings/:id/images` marshruti GoRouter-da alohida segment sifatida ro'yxatdan o'tkazildi.
+
+## Mobile My Listings (Step 56)
+
+### Endpoint
+
+- **GET /listings/my** — foydalanuvchining o'z e'lonlarini qaytaradi (auth token talab qilinadi).
+
+### Query Parametrlari (Backend DTO ga mos)
+
+| Parametr | Turi    | Majburiy | Tavsif                              |
+|----------|---------|----------|-------------------------------------|
+| page     | int     | Yo'q     | Sahifa raqami (default: 1)          |
+| limit    | int     | Yo'q     | Har sahifada necha ta (max: 50)     |
+| status   | enum    | Yo'q     | PENDING / ACTIVE / REJECTED / ARCHIVED |
+| type     | enum    | Yo'q     | MACHINERY_RENT / PRODUCT_SALE / ...  |
+
+### Auth Token
+
+`ApiClient` orqali `Bearer <token>` headeriga avtomatik qo'shiladi. Token `flutter_secure_storage`da saqlanadi.
+
+### Status ko'rinishi
+
+- **PENDING** (sariq) — "Admin tasdiqlashini kutmoqda"
+- **ACTIVE** (yashil) — "Ommaga ko'rinmoqda"
+- **REJECTED** (qizil) — "Admin tomonidan rad etilgan"
+- **ARCHIVED** (kulrang) — "Arxivlangan"
+
+### Funksionallik
+
+- **Status filter (chip):** Barchasi / Moderatsiyada / Faol / Rad etilgan / Arxivda
+- **Pagination:** Birinchi sahifada 10 ta, "Yana yuklash" button orqali keyingi sahifa
+- **"Ko'rish" tugmasi:**
+  - ACTIVE e'lon → `/listings/:id` detail sahifasiga o'tadi
+  - PENDING/REJECTED/ARCHIVED → public detailga OLIB BORMASDAN SnackBar chiqaradi
+- **"Rasm qo'shish" tugmasi:**
+  - PENDING yoki ACTIVE e'lon → `/listings/:id/images`ga o'tadi
+  - REJECTED/ARCHIVED → tugma disabled ko'rsatiladi (real action yo'q)
+- **Empty state:** E'lon yo'q bo'lsa "Birinchi e'lonni joylashtirish" button, filtr bo'sh bo'lsa "Filtrni tozalash" button
+- **Pull-to-refresh:** Ro'yxatni pastga tortib yangilash imkoniyati
+
+### Create Listing Success ekrani (yangilangan)
+
+- "Rasm qo'shish" — image upload sahifasiga o'tadi
+- **"Mening e'lonlarim"** — `/my-listings`ga o'tadi (YANGI)
+- "E'lonlar ro'yxatiga o'tish" — public `/listings`ga o'tadi
+- "Bosh sahifaga qaytish" — home
+
+### Image Upload sahifasi (yangilangan)
+
+- **"Mening e'lonlarim"** button qo'shildi — `/my-listings`ga o'tadi (YANGI)
+
+### Home sahifasi (yangilangan)
+
+- **"Mening e'lonlarim"** card qo'shildi — subtitle: "Joylagan e'lonlaringiz holatini kuzating", route: `/my-listings`
+
+### Route
+
+- `/my-listings` → `MyListingsPage` (yangi)
+
+### Xatolik holati
+
+- Backend xatoligida to'liq xato matni ko'rsatiladi
+- "Qayta urinish" button orqali qayta yuklash
+
+### Edit / Archive
+
+Hozircha yozilmagan. Keyingi bosqichlarda ulanadi.
+
+---
+
+## Keyingi qadam (Step 57)
+
+- Foydalanuvchi profilini ko'rish va tahrirlash.

@@ -59,6 +59,37 @@ class ApiClient {
     }
   }
 
+  Future<dynamic> uploadFile(
+    String path, {
+    required String fieldName,
+    required String filePath,
+    String? fileName,
+    Map<String, dynamic>? data,
+  }) async {
+    try {
+      final file = await MultipartFile.fromFile(
+        filePath,
+        filename: fileName,
+      );
+      
+      final formData = FormData.fromMap({
+        fieldName: file,
+        ...?data,
+      });
+
+      final response = await _dio.post(
+        path,
+        data: formData,
+        options: Options(
+          contentType: 'multipart/form-data',
+        ),
+      );
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleDioException(e);
+    }
+  }
+
   ApiException _handleDioException(DioException e) {
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout ||

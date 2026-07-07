@@ -8,6 +8,7 @@ import 'package:qishloq_ai_mobile/features/auth/data/auth_service.dart';
 import 'package:qishloq_ai_mobile/features/categories/data/category_service.dart';
 import 'package:qishloq_ai_mobile/features/health/data/health_service.dart';
 import 'package:qishloq_ai_mobile/features/listings/data/listing_service.dart';
+import 'package:qishloq_ai_mobile/features/regions/data/region_service.dart';
 
 final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
   return const FlutterSecureStorage();
@@ -45,4 +46,9 @@ final categoryServiceProvider = Provider<CategoryService>((ref) {
 final listingServiceProvider = Provider<ListingService>((ref) {
   final apiClient = ref.watch(apiClientProvider);
   return ListingService(apiClient);
+});
+
+final regionServiceProvider = Provider<RegionService>((ref) {
+  final apiClient = ref.watch(apiClientProvider);
+  return RegionService(apiClient);
 });

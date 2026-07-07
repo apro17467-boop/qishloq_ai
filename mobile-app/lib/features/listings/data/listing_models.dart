@@ -241,3 +241,87 @@ extension ListingHelpers on Listing {
     }
   }
 }
+
+class CreateListingRequest {
+  final String type;
+  final String categoryId;
+  final String? regionId;
+  final String title;
+  final String? description;
+  final String? priceAmount;
+  final String? priceCurrency;
+  final String? unit;
+  final String? contactPhone;
+  final String? address;
+
+  CreateListingRequest({
+    required this.type,
+    required this.categoryId,
+    this.regionId,
+    required this.title,
+    this.description,
+    this.priceAmount,
+    this.priceCurrency,
+    this.unit,
+    this.contactPhone,
+    this.address,
+  });
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {
+      'type': type,
+      'categoryId': categoryId,
+      'title': title,
+    };
+
+    if (regionId != null && regionId!.trim().isNotEmpty) {
+      data['regionId'] = regionId;
+    }
+    if (description != null && description!.trim().isNotEmpty) {
+      data['description'] = description;
+    }
+    if (priceAmount != null && priceAmount!.trim().isNotEmpty) {
+      data['priceAmount'] = priceAmount;
+    }
+    if (priceCurrency != null && priceCurrency!.trim().isNotEmpty) {
+      data['priceCurrency'] = priceCurrency;
+    }
+    if (unit != null && unit!.trim().isNotEmpty) {
+      data['unit'] = unit;
+    }
+    if (contactPhone != null && contactPhone!.trim().isNotEmpty) {
+      data['contactPhone'] = contactPhone;
+    }
+    if (address != null && address!.trim().isNotEmpty) {
+      data['address'] = address;
+    }
+
+    return data;
+  }
+}
+
+class CreateListingResponse {
+  final Listing data;
+
+  CreateListingResponse({required this.data});
+
+  factory CreateListingResponse.fromJson(Map<String, dynamic> json) {
+    return CreateListingResponse(
+      data: Listing.fromJson(json['data'] as Map<String, dynamic>),
+    );
+  }
+}
+
+class UploadListingImageResponse {
+  final ListingImage data;
+
+  UploadListingImageResponse({required this.data});
+
+  factory UploadListingImageResponse.fromJson(Map<String, dynamic> json) {
+    return UploadListingImageResponse(
+      data: ListingImage.fromJson(json['data'] as Map<String, dynamic>),
+    );
+  }
+}
+
+

@@ -363,13 +363,7 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () {
-              ScaffoldMessenger.of(context).clearSnackBars();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('E’lon tafsiloti 53-qadamda ulanadi.'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
+              context.push('/listings/${listing.id}');
             },
             child: Padding(
               padding: const EdgeInsets.all(12.0),

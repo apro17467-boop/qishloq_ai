@@ -3,8 +3,11 @@ import 'package:qishloq_ai_mobile/features/ai_advice/presentation/ai_advice_plac
 import 'package:qishloq_ai_mobile/features/auth/presentation/login_page.dart';
 import 'package:qishloq_ai_mobile/features/categories/presentation/categories_page.dart';
 import 'package:qishloq_ai_mobile/features/home/presentation/home_page.dart';
-import 'package:qishloq_ai_mobile/features/listings/presentation/create_listing_placeholder_page.dart';
+import 'package:qishloq_ai_mobile/features/listings/presentation/create_listing_page.dart';
 import 'package:qishloq_ai_mobile/features/listings/presentation/listings_page.dart';
+import 'package:qishloq_ai_mobile/features/listings/presentation/listing_detail_page.dart';
+import 'package:qishloq_ai_mobile/features/listings/presentation/listing_image_upload_page.dart';
+import 'package:qishloq_ai_mobile/features/listings/presentation/my_listings_page.dart';
 import 'package:qishloq_ai_mobile/features/onboarding/presentation/onboarding_page.dart';
 import 'package:qishloq_ai_mobile/features/profile/presentation/profile_placeholder_page.dart';
 import 'package:qishloq_ai_mobile/features/splash/presentation/splash_page.dart';
@@ -42,8 +45,30 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
+      path: '/listings/:id/images',
+      builder: (context, state) {
+        final listingId = state.pathParameters['id'] ?? '';
+        final listingTitle = state.uri.queryParameters['title'];
+        return ListingImageUploadPage(
+          listingId: listingId,
+          listingTitle: listingTitle,
+        );
+      },
+    ),
+    GoRoute(
+      path: '/listings/:id',
+      builder: (context, state) {
+        final listingId = state.pathParameters['id'] ?? '';
+        return ListingDetailPage(listingId: listingId);
+      },
+    ),
+    GoRoute(
       path: '/create-listing',
-      builder: (context, state) => const CreateListingPlaceholderPage(),
+      builder: (context, state) => const CreateListingPage(),
+    ),
+    GoRoute(
+      path: '/my-listings',
+      builder: (context, state) => const MyListingsPage(),
     ),
     GoRoute(
       path: '/ai-advice',

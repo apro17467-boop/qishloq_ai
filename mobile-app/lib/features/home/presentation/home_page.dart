@@ -270,6 +270,13 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
               const SizedBox(height: 8),
               AppCard(
+                title: 'Mening e’lonlarim',
+                subtitle: 'Joylagan e’lonlaringiz holatini kuzating.',
+                icon: Icons.list_alt_outlined,
+                onTap: () => context.go('/my-listings'),
+              ),
+              const SizedBox(height: 8),
+              AppCard(
                 title: 'AI maslahat',
                 subtitle: 'Qishloq xo‘jaligiga oid barcha savollaringizga AI javoblari.',
                 icon: Icons.psychology_alt,
