@@ -45,16 +45,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
   }
 
-  void _showPlaceholderMessage(BuildContext context, String section) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$section: Bu bo‘lim keyingi bosqichda ulanadi'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
   Future<void> _checkBackendHealth(BuildContext context, WidgetRef ref) async {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -262,28 +252,35 @@ class _HomePageState extends ConsumerState<HomePage> {
                 title: 'E’lonlar',
                 subtitle: 'Sotiladigan va ijaraga beriladigan mahsulotlar va texnikalar.',
                 icon: Icons.grid_view,
-                onTap: () => _showPlaceholderMessage(context, 'E’lonlar'),
+                onTap: () => context.go('/listings'),
+              ),
+              const SizedBox(height: 8),
+              AppCard(
+                title: 'Kategoriyalar',
+                subtitle: 'Mahsulotlar va xizmatlar toifalarini ko‘rish.',
+                icon: Icons.category_outlined,
+                onTap: () => context.go('/categories'),
               ),
               const SizedBox(height: 8),
               AppCard(
                 title: 'E’lon joylash',
                 subtitle: 'O‘z mahsulotingiz yoki texnikangizni joylashtiring.',
                 icon: Icons.add_circle_outline,
-                onTap: () => _showPlaceholderMessage(context, 'E’lon joylash'),
+                onTap: () => context.go('/create-listing'),
               ),
               const SizedBox(height: 8),
               AppCard(
                 title: 'AI maslahat',
                 subtitle: 'Qishloq xo‘jaligiga oid barcha savollaringizga AI javoblari.',
                 icon: Icons.psychology_alt,
-                onTap: () => _showPlaceholderMessage(context, 'AI maslahat'),
+                onTap: () => context.go('/ai-advice'),
               ),
               const SizedBox(height: 8),
               AppCard(
                 title: 'Mening profilim',
                 subtitle: 'Shaxsiy ma’lumotlar, e’lonlar va sozlamalarni boshqarish.',
                 icon: Icons.person_outline,
-                onTap: () => _showPlaceholderMessage(context, 'Mening profilim'),
+                onTap: () => context.go('/profile'),
               ),
               const SizedBox(height: 24),
               const Divider(),

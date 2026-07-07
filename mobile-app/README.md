@@ -77,8 +77,25 @@ Ilovada API Client infratuzilmasi, Mobil Autentifikatsiya (OTP Request & Verify)
 - `flutter_secure_storage`: Foydalanuvchi tokenlarini xavfsiz saqlash.
 - `flutter_riverpod`: Ilova holatini (Auth state, API client) reaktiv boshqarish uchun (Riverpod v3 Notifier arxitekturasi asosida).
 
-## Keyingi qadam (Step 51)
+### Home Navigation & Categories Screen (Step 51)
 
-- Asosiy bo‘limlar (E'lonlar, AI maslahat, Mening profilim) uchun real ma'lumotlarni backend-dan olib kelish va integratsiya qilish.
+- **Home sahifasida navigatsiya:** Balla asosiy bo'limlar (E'lonlar, Kategoriyalar, E'lon joylash, AI maslahat, Profil) real routelarga va sahifalarga bog'landi.
+- **Kategoriyalar Ekran:** `GET /reference/categories` endpointidan kategoriyalar ro'yxatini real vaqtda yuklaydi.
+- **Kategoriyalar API:**
+  - Endpoint: `GET /reference/categories`
+  - Model fieldlari: `id`, `nameUz`, `nameRu`, `slug`, `type`, `isActive`
+- **Kategoriya Turi Helperi (Type labels translation):**
+  - `MACHINERY_RENT` -> Texnika ijarasi
+  - `PRODUCT_SALE` -> Dehqon mahsulotlari
+  - `LIVESTOCK_SALE` -> Chorva savdosi
+  - `MACHINERY_SALE` -> Texnika savdosi
+  - `SERVICE` -> Agro xizmatlar
+- **Foydalanuvchi interfeysi holatlari:** Loading, Error (Retry tugmasi bilan) va Empty holatlari mavjud.
+- **Placeholder sahifalar:** `ListingsPlaceholderPage`, `CreateListingPlaceholderPage`, `AiAdvicePlaceholderPage` va `ProfilePlaceholderPage` yaratildi. Ularda ortga (Bosh sahifaga) qaytish tugmasi mavjud.
+- **E'lonlar ro'yxati:** Keyingi 52-qadamda backend bilan ulanadi.
+
+## Keyingi qadam (Step 52)
+
+- E'lonlar ro'yxatini backend API'ga ulash va filtrlarni sozlash.
 
 

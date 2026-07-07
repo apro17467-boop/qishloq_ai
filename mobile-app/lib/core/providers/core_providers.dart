@@ -5,6 +5,7 @@ import 'package:qishloq_ai_mobile/core/storage/token_storage.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_controller.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/features/auth/data/auth_service.dart';
+import 'package:qishloq_ai_mobile/features/categories/data/category_service.dart';
 import 'package:qishloq_ai_mobile/features/health/data/health_service.dart';
 
 final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
@@ -33,4 +34,9 @@ final authServiceProvider = Provider<AuthService>((ref) {
 
 final authControllerProvider = NotifierProvider<AuthController, AuthState>(() {
   return AuthController();
+});
+
+final categoryServiceProvider = Provider<CategoryService>((ref) {
+  final apiClient = ref.watch(apiClientProvider);
+  return CategoryService(apiClient);
 });

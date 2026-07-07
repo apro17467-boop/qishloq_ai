@@ -1,7 +1,12 @@
 import 'package:go_router/go_router.dart';
+import 'package:qishloq_ai_mobile/features/ai_advice/presentation/ai_advice_placeholder_page.dart';
 import 'package:qishloq_ai_mobile/features/auth/presentation/login_page.dart';
+import 'package:qishloq_ai_mobile/features/categories/presentation/categories_page.dart';
 import 'package:qishloq_ai_mobile/features/home/presentation/home_page.dart';
+import 'package:qishloq_ai_mobile/features/listings/presentation/create_listing_placeholder_page.dart';
+import 'package:qishloq_ai_mobile/features/listings/presentation/listings_placeholder_page.dart';
 import 'package:qishloq_ai_mobile/features/onboarding/presentation/onboarding_page.dart';
+import 'package:qishloq_ai_mobile/features/profile/presentation/profile_placeholder_page.dart';
 import 'package:qishloq_ai_mobile/features/splash/presentation/splash_page.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -22,6 +27,26 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/home',
       builder: (context, state) => const HomePage(),
+    ),
+    GoRoute(
+      path: '/categories',
+      builder: (context, state) => const CategoriesPage(),
+    ),
+    GoRoute(
+      path: '/listings',
+      builder: (context, state) => const ListingsPlaceholderPage(),
+    ),
+    GoRoute(
+      path: '/create-listing',
+      builder: (context, state) => const CreateListingPlaceholderPage(),
+    ),
+    GoRoute(
+      path: '/ai-advice',
+      builder: (context, state) => const AiAdvicePlaceholderPage(),
+    ),
+    GoRoute(
+      path: '/profile',
+      builder: (context, state) => const ProfilePlaceholderPage(),
     ),
   ],
 );
