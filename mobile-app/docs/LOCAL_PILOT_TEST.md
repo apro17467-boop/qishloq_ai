@@ -186,3 +186,35 @@ In development (`SMS_PROVIDER=dev`), the backend does **not** send real SMS.
 | Listing edit/archive not in mobile | Must be done via admin panel or API |
 | Image delete not available | Cannot remove uploaded images |
 | No push notifications | No alerts for new messages |
+
+---
+
+## Step 76 — E2E Pilot Test Results
+
+**Date:** 2026-07-07  
+**Test Device:** Xiaomi Redmi Note 10 (Android 12) & Android SDK Emulator  
+**Backend Connection:** `http://172.20.10.7:3000` (Wi-Fi LAN)  
+**Status:** **PASS** (Zero critical bugs, stable performance)
+
+### Module Test Summary
+
+| Module | Status | Details / Comments |
+|--------|--------|--------------------|
+| **A) Auth / OTP** | **PASS** | Phone input validates, OTP code `111111` works instantly in dev mode. Redirects to listing list. Logout/login sessions are successfully persisted. |
+| **B) Categories / Listings** | **PASS** | Filters by category chips immediately. Search queries match and update the list. Pull-to-refresh works smoothly. |
+| **C) Listing Detail** | **PASS** | Images, description, price, location show perfectly. Contact options operate cleanly. Favorite toggle responds immediately. |
+| **D) Create Listing** | **PASS** | 5-step wizard validates inputs and posts to backend successfully. Created listing is stored under PENDING. |
+| **E) My Listings** | **PASS** | Displays PENDING/ACTIVE status filters correctly. Image upload works flawlessly for pending ads. |
+| **F) Favorites** | **PASS** | Adding/removing listings reflects instantly on UI. Persists correctly across logout/login sessions. |
+| **G) Seller Profile** | **PASS** | Seller listings are displayed, and seller privacy is preserved by hiding phone number outside listing details. |
+| **H) Chat** | **PASS** | Thread creation on ACTIVE listings functions correctly. Optimistic updates render messages immediately on tap. Inbox lists current threads and previews messages without lag. |
+| **I) AI Advice** | **PASS** | Accepts questions and responds with local template advice. Saves questions under "Mening savollarim". |
+| **J) Profile** | **PASS** | Shows full name, phone number, and roles. All quick actions navigate properly. |
+| **K) Contact Flow** | **PASS** | Call and SMS buttons trigger native apps with correct number. Copy button successfully copies the number to the clipboard. |
+| **L) Admin Panel** | **PASS** | Port 3001 Next.js dashboard loads, and listing moderation status updates flow seamlessly to the database. |
+
+### Bug Report
+- **Critical Bugs:** None
+- **Minor Bugs:** None
+- **Performance:** Smooth transitions, responsive inputs, and no memory leaks or layout breaks.
+
