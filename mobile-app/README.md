@@ -536,5 +536,27 @@ E'lon tafsilotlari sahifasi (`ListingDetailPage`) foydalanuvchilar uchun qulay v
 8. **API & Logic:**
    - `GET /listings/:id` API call logic va uning router/detail oqimlari 100% buzilmasdan saqlab qolindi.
 
-### Keyingi qadam (Step 65)
-- Create listing step-by-step oqimi (Wizard flow) va listing yaratish UX polish.
+## Create Listing Wizard Flow (Step 65)
+
+`CreateListingPage` bitta uzun formadan 5 bosqichli wizard flowga o'tkazildi:
+
+1. **Kategoriya tanlash** — kategoriyalar `GET /reference/categories` orqali yuklanadi, card ko'rinishida tanlanadi va e'lon turi avtomatik `category.type`dan olinadi.
+2. **Asosiy ma'lumot** — sarlavha va tavsif alohida stepda validatsiya qilinadi (`title` majburiy, 3-120 belgi; `description` max 2000 belgi).
+3. **Narx va aloqa** — narx ixtiyoriy, lekin kiritilsa faqat raqam/decimal formatda tekshiriladi; valyuta `UZS` ko'rinadi va o'zgartirilmaydi; telefon `+998XXXXXXXXX` formatida validatsiya qilinadi.
+4. **Joylashuv** — hudud `GET /reference/regions` orqali dropdown ko'rinishida tanlanadi, manzil ixtiyoriy va max 255 belgi bilan cheklanadi.
+5. **Tasdiqlash va yuborish** — yuborishdan oldin barcha kiritilgan ma'lumotlar review ekranda ko'rsatiladi, bo'sh maydonlar `Kiritilmagan` deb belgilanadi.
+
+### UX va validatsiya
+
+- Yuqorida `1/5 Kategoriya`, `2/5 Ma'lumot`, `3/5 Narx va aloqa`, `4/5 Joylashuv`, `5/5 Tasdiqlash` ko'rinishidagi progress indicator saqlandi.
+- Har bir stepdan keyingisiga o'tishda faqat shu step validatsiyasi ishlaydi.
+- Submit oldidan barcha fieldlar yana tekshiriladi va xato bo'lsa foydalanuvchi kerakli stepga qaytariladi.
+- Pastki `Ortga`, `Keyingi` va `E'lonni yuborish` tugmalari `AppButton` orqali boshqariladi.
+- Bottom navigation (`AppBottomNav currentIndex: 2`), auth protection va scroll/padding flowlari saqlandi.
+
+### API va success flow
+
+- `POST /listings` uchun `CreateListingRequest` payload fieldlari o'zgartirilmadi.
+- `ListingService.createListing` va backend endpointlar o'zgartirilmadi.
+- Yaratilgandan keyingi success ekrani saqlandi: `Rasm qo'shish`, `Mening e'lonlarim`, `E'lonlar ro'yxatiga o'tish`, `Bosh sahifa`.
+- Image upload flow `/listings/:id/images` yaratilgan listing ID bilan ishlashda davom etadi.

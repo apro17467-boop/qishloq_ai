@@ -8,7 +8,6 @@ import 'package:qishloq_ai_mobile/features/categories/data/category_models.dart'
 import 'package:qishloq_ai_mobile/features/listings/data/listing_models.dart';
 import 'package:qishloq_ai_mobile/features/regions/data/region_models.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_button.dart';
-
 import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_bottom_nav.dart';
 
@@ -20,11 +19,18 @@ class CreateListingPage extends ConsumerStatefulWidget {
 }
 
 class _CreateListingPageState extends ConsumerState<CreateListingPage> {
-  final _formKey = GlobalKey<FormState>();
+  // Wizard current step
+  int _currentStep = 0;
+
+  // Step Form Keys
+  final _step2FormKey = GlobalKey<FormState>();
+  final _step3FormKey = GlobalKey<FormState>();
+  final _step4FormKey = GlobalKey<FormState>();
 
   // Form Field State Variables
   Category? _selectedCategory;
   Region? _selectedRegion;
+  String? _listingType;
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
@@ -42,6 +48,8 @@ class _CreateListingPageState extends ConsumerState<CreateListingPage> {
   List<Category> _categories = [];
   List<Region> _regions = [];
 
+  String? _step1Error;
+
   @override
   void initState() {
     super.initState();
@@ -51,7 +59,7 @@ class _CreateListingPageState extends ConsumerState<CreateListingPage> {
         context.go('/login');
         return;
       }
-      
+
       // Set default phone number from auth state
       if (authState.user?.phone != null) {
         _phoneController.text = authState.user!.phone;
@@ -79,7 +87,9 @@ class _CreateListingPageState extends ConsumerState<CreateListingPage> {
     });
 
     try {
-      final categoryList = await ref.read(categoryServiceProvider).getCategories();
+      final categoryList = await ref
+          .read(categoryServiceProvider)
+          .getCategories();
       final regionList = await ref.read(regionServiceProvider).getRegions();
 
       setState(() {
@@ -112,15 +122,184 @@ class _CreateListingPageState extends ConsumerState<CreateListingPage> {
     }
   }
 
-  Future<void> _submitForm() async {
-    if (_formKey.currentState == null || !_formKey.currentState!.validate()) {
-      return;
+  IconData _getCategoryIcon(String type) {
+    switch (type) {
+      case 'MACHINERY_RENT':
+        return Icons.agriculture_outlined;
+      case 'PRODUCT_SALE':
+        return Icons.shopping_basket_outlined;
+      case 'LIVESTOCK_SALE':
+        return Icons.pets_outlined;
+      case 'MACHINERY_SALE':
+        return Icons.construction_outlined;
+      case 'SERVICE':
+        return Icons.build_outlined;
+      default:
+        return Icons.category_outlined;
+    }
+  }
+
+  void _nextStep() {
+    FocusScope.of(context).unfocus();
+
+    if (_currentStep == 0) {
+      if (_selectedCategory == null) {
+        setState(() {
+          _step1Error = 'Iltimos, kategoriyani tanlang';
+        });
+        return;
+      }
+      setState(() {
+        _step1Error = null;
+        _currentStep = 1;
+      });
+    } else if (_currentStep == 1) {
+      if (_step2FormKey.currentState != null &&
+          _step2FormKey.currentState!.validate()) {
+        setState(() {
+          _currentStep = 2;
+        });
+      }
+    } else if (_currentStep == 2) {
+      if (_step3FormKey.currentState != null &&
+          _step3FormKey.currentState!.validate()) {
+        setState(() {
+          _currentStep = 3;
+        });
+      }
+    } else if (_currentStep == 3) {
+      if (_step4FormKey.currentState != null &&
+          _step4FormKey.currentState!.validate()) {
+        setState(() {
+          _currentStep = 4;
+        });
+      }
+    }
+  }
+
+  void _prevStep() {
+    FocusScope.of(context).unfocus();
+    if (_currentStep > 0) {
+      setState(() {
+        _currentStep--;
+      });
+    }
+  }
+
+  String? _validateTitle(String? value) {
+    final title = value?.trim() ?? '';
+    if (title.isEmpty) {
+      return 'Sarlavha yozish majburiy';
+    }
+    if (title.length < 3) {
+      return 'Kamida 3 ta belgi kiriting';
+    }
+    if (title.length > 120) {
+      return 'Ko‘pi bilan 120 ta belgi kiriting';
+    }
+    return null;
+  }
+
+  String? _validateDescription(String? value) {
+    final description = value?.trim() ?? '';
+    if (description.length > 2000) {
+      return 'Ko‘pi bilan 2000 ta belgi kiriting';
+    }
+    return null;
+  }
+
+  String? _validatePrice(String? value) {
+    final price = value?.trim() ?? '';
+    if (price.isEmpty) {
+      return null;
+    }
+    if (!RegExp(r'^\d+(\.\d+)?$').hasMatch(price)) {
+      return 'Narx faqat raqam yoki decimal formatda bo‘lsin';
+    }
+    final numValue = double.tryParse(price);
+    if (numValue == null || numValue <= 0) {
+      return 'Narx 0 dan katta bo‘lsin';
+    }
+    return null;
+  }
+
+  String? _validateUnit(String? value) {
+    final unit = value?.trim() ?? '';
+    if (unit.length > 30) {
+      return 'Ko‘pi bilan 30 ta belgi kiriting';
+    }
+    return null;
+  }
+
+  String? _validatePhone(String? value) {
+    final phone = value?.trim() ?? '';
+    if (phone.isEmpty) {
+      return null;
+    }
+    final reg = RegExp(r'^\+998\d{9}$');
+    if (!reg.hasMatch(phone)) {
+      return 'Telefon formati xato (masalan: +998901234567)';
+    }
+    return null;
+  }
+
+  String? _validateAddress(String? value) {
+    final address = value?.trim() ?? '';
+    if (address.length > 255) {
+      return 'Ko‘pi bilan 255 ta belgi kiriting';
+    }
+    return null;
+  }
+
+  void _showStepError(int step, String message) {
+    setState(() {
+      _currentStep = step;
+      _submitErrorMessage = null;
+      _step1Error = step == 0 ? message : null;
+    });
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  bool _validateAllBeforeSubmit() {
+    if (_selectedCategory == null || _listingType == null) {
+      _showStepError(0, 'Iltimos, kategoriyani tanlang');
+      return false;
     }
 
-    if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Iltimos, e’lon kategoriyasini tanlang')),
-      );
+    final step2Error =
+        _validateTitle(_titleController.text) ??
+        _validateDescription(_descriptionController.text);
+    if (step2Error != null) {
+      _showStepError(1, step2Error);
+      return false;
+    }
+
+    final step3Error =
+        _validatePrice(_priceController.text) ??
+        _validateUnit(_unitController.text) ??
+        _validatePhone(_phoneController.text);
+    if (step3Error != null) {
+      _showStepError(2, step3Error);
+      return false;
+    }
+
+    final step4Error = _validateAddress(_addressController.text);
+    if (step4Error != null) {
+      _showStepError(3, step4Error);
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<void> _submitForm() async {
+    if (_isSubmitting) {
+      return;
+    }
+    if (!_validateAllBeforeSubmit()) {
       return;
     }
 
@@ -131,7 +310,7 @@ class _CreateListingPageState extends ConsumerState<CreateListingPage> {
 
     try {
       final request = CreateListingRequest(
-        type: _selectedCategory!.type,
+        type: _listingType!,
         categoryId: _selectedCategory!.id,
         regionId: _selectedRegion?.id,
         title: _titleController.text.trim(),
@@ -143,18 +322,29 @@ class _CreateListingPageState extends ConsumerState<CreateListingPage> {
         address: _addressController.text.trim(),
       );
 
-      final listing = await ref.read(listingServiceProvider).createListing(request);
+      final listing = await ref
+          .read(listingServiceProvider)
+          .createListing(request);
 
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _createdListing = listing;
         _isSubmitting = false;
       });
     } on ApiException catch (e) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _submitErrorMessage = e.message;
         _isSubmitting = false;
       });
     } catch (e) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _submitErrorMessage = e.toString();
         _isSubmitting = false;
@@ -172,27 +362,19 @@ class _CreateListingPageState extends ConsumerState<CreateListingPage> {
     });
 
     if (!authState.isAuthenticated) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('E’lon joylash'),
-      ),
-      body: SafeArea(
-        child: _buildBody(),
-      ),
+      appBar: AppBar(title: const Text('E’lon joylash')),
+      body: SafeArea(child: _buildBody()),
       bottomNavigationBar: const AppBottomNav(currentIndex: 2),
     );
   }
 
   Widget _buildBody() {
     if (_isInitLoading) {
-      return const AppLoadingState(
-        message: 'Yuklanmoqda...',
-      );
+      return const AppLoadingState(message: 'Yuklanmoqda...');
     }
 
     if (_initErrorMessage != null) {
@@ -207,290 +389,530 @@ class _CreateListingPageState extends ConsumerState<CreateListingPage> {
       return _buildSuccessScreen();
     }
 
+    Widget stepWidget;
+    switch (_currentStep) {
+      case 0:
+        stepWidget = _buildStep1CategorySelection();
+        break;
+      case 1:
+        stepWidget = _buildStep2Info();
+        break;
+      case 2:
+        stepWidget = _buildStep3PriceContact();
+        break;
+      case 3:
+        stepWidget = _buildStep4Location();
+        break;
+      case 4:
+        stepWidget = _buildStep5Review();
+        break;
+      default:
+        stepWidget = const SizedBox();
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Info banner about images
-            const AppInfoBox(
-              message: 'E’lon admin tomonidan tasdiqlangandan keyin ko‘rinadi. Rasm qo‘shish keyingi bosqichda ulanadi.',
-            ),
-            const SizedBox(height: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Info banner about images
+          const AppInfoBox(
+            message:
+                'E’lon admin tomonidan tasdiqlangandan keyin ko‘rinadi. Rasm qo‘shish keyingi bosqichda ulanadi.',
+          ),
+          const SizedBox(height: 20),
 
-            if (_submitErrorMessage != null) ...[
-              AppInfoBox(
-                message: _submitErrorMessage!,
-                icon: Icons.error_outline,
-                backgroundColor: Colors.red[50],
-                foregroundColor: Colors.red[800],
-              ),
-              const SizedBox(height: 16),
-            ],
+          // Progress Indicator
+          _buildProgressIndicator(),
 
-            const Text(
-              'E’lon tafsilotlari',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          if (_submitErrorMessage != null) ...[
+            AppInfoBox(
+              message: _submitErrorMessage!,
+              icon: Icons.error_outline,
+              backgroundColor: Colors.red[50],
+              foregroundColor: Colors.red[800],
             ),
             const SizedBox(height: 16),
+          ],
 
-            // Category Dropdown
-            DropdownButtonFormField<Category>(
-              decoration: const InputDecoration(
-                labelText: 'Kategoriya *',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.category_outlined),
+          // Step Content
+          stepWidget,
+          const SizedBox(height: 32),
+
+          // Bottom Buttons
+          _buildBottomButtons(),
+
+          // Spacing so it doesn't get covered by AppBottomNav
+          const SizedBox(height: 80),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressIndicator() {
+    final steps = [
+      'Kategoriya',
+      'Ma’lumot',
+      'Narx va aloqa',
+      'Joylashuv',
+      'Tasdiqlash',
+    ];
+
+    final progress = (_currentStep + 1) / steps.length;
+    final primary = Theme.of(context).colorScheme.primary;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '${_currentStep + 1}/${steps.length} ${steps[_currentStep]}',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: primary,
               ),
-              hint: const Text('Kategoriyani tanlang'),
-              initialValue: _selectedCategory,
-              items: _categories.map((Category cat) {
-                return DropdownMenuItem<Category>(
-                  value: cat,
-                  child: Text(cat.nameUz),
-                );
-              }).toList(),
-              validator: (val) => val == null ? 'Kategoriyani tanlash majburiy' : null,
-              onChanged: (Category? newCat) {
+            ),
+            Text(
+              '${((_currentStep + 1) / steps.length * 100).toInt()}%',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: progress,
+            minHeight: 6,
+            backgroundColor: Colors.grey[200],
+            valueColor: AlwaysStoppedAnimation<Color>(primary),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildStep1CategorySelection() {
+    if (_categories.isEmpty) {
+      return const AppEmptyState(
+        title: 'Kategoriyalar mavjud emas',
+        message: 'Iltimos, keyinroq qayta urinib ko‘ring.',
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'E’lon kategoriyasini tanlang',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _categories.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 10),
+          itemBuilder: (context, index) {
+            final category = _categories[index];
+            final isSelected = _selectedCategory?.id == category.id;
+            final primary = Theme.of(context).colorScheme.primary;
+
+            return InkWell(
+              onTap: () {
                 setState(() {
-                  _selectedCategory = newCat;
+                  _selectedCategory = category;
+                  _listingType = category.type;
+                  _step1Error = null;
                 });
               },
-            ),
-            const SizedBox(height: 16),
-
-            // Listing Type Display
-            if (_selectedCategory != null) ...[
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                width: double.infinity,
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey[300]!),
+                  color: isSelected
+                      ? primary.withValues(alpha: 0.05)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected ? primary : Colors.grey[300]!,
+                    width: isSelected ? 2 : 1,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: primary.withValues(alpha: 0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.label_outline, color: Colors.grey[700]),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'E’lon turi (kategoriyaga qarab)',
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          _getTypeLabel(_selectedCategory!.type),
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    Icon(
+                      _getCategoryIcon(category.type),
+                      color: isSelected ? primary : Colors.grey[600],
+                      size: 24,
                     ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            category.nameUz,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
+                              color: isSelected ? primary : Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _getTypeLabel(category.type),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isSelected
+                                  ? primary.withValues(alpha: 0.7)
+                                  : Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (isSelected)
+                      Icon(Icons.check_circle, color: primary)
+                    else
+                      Icon(Icons.radio_button_off, color: Colors.grey[400]),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+            );
+          },
+        ),
+        if (_step1Error != null) ...[
+          const SizedBox(height: 12),
+          Text(
+            _step1Error!,
+            style: const TextStyle(color: Colors.red, fontSize: 13),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildStep2Info() {
+    return Form(
+      key: _step2FormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Sarlavha va Tavsif',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _titleController,
+            decoration: const InputDecoration(
+              labelText: 'E’lon sarlavhasi *',
+              hintText: 'Masalan: MTZ traktor ijaraga beriladi',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.title),
+            ),
+            validator: (val) {
+              return _validateTitle(val);
+            },
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _descriptionController,
+            maxLines: 5,
+            decoration: const InputDecoration(
+              labelText: 'Tafsilotlar / Tavsif',
+              hintText: 'E’lon haqida batafsil yozing...',
+              border: OutlineInputBorder(),
+              alignLabelWithHint: true,
+            ),
+            validator: (val) {
+              return _validateDescription(val);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStep3PriceContact() {
+    return Form(
+      key: _step3FormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Narx va Aloqa',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 3,
+                child: TextFormField(
+                  controller: _priceController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'Narxi',
+                    hintText: '0.00',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.payments_outlined),
+                  ),
+                  validator: (val) {
+                    return _validatePrice(val);
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 1,
+                child: Container(
+                  height: 56,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey[400]!),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'UZS',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ),
+              ),
             ],
-
-            // Title
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'E’lon sarlavhasi *',
-                hintText: 'Masalan: Samarqand qizil pomidori',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.title),
-              ),
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) {
-                  return 'Sarlavha yozish majburiy';
-                }
-                if (val.trim().length < 3) {
-                  return 'Kamida 3 ta belgi kiriting';
-                }
-                if (val.trim().length > 120) {
-                  return 'Ko‘pi bilan 120 ta belgi kiriting';
-                }
-                return null;
-              },
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _unitController,
+            decoration: const InputDecoration(
+              labelText: 'O‘lchov birligi',
+              hintText: 'Masalan: kg, dona, soat, kun',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.scale_outlined),
             ),
-            const SizedBox(height: 16),
-
-            // Description
-            TextFormField(
-              controller: _descriptionController,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                labelText: 'Tafsilotlar / Tavsif',
-                hintText: 'E’lon haqida batafsil ma’lumot bering (nav, holat va hokazo)',
-                border: OutlineInputBorder(),
-                alignLabelWithHint: true,
-              ),
-              validator: (val) {
-                if (val != null && val.trim().length > 2000) {
-                  return 'Ko‘pi bilan 2000 ta belgi kiriting';
-                }
-                return null;
-              },
+            validator: (val) {
+              return _validateUnit(val);
+            },
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'Bog‘lanish telefoni',
+              hintText: '+998901234567',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.phone),
             ),
-            const SizedBox(height: 16),
+            validator: (val) {
+              return _validatePhone(val);
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
-            // Price & Currency & Unit
-            Row(
+  Widget _buildStep4Location() {
+    return Form(
+      key: _step4FormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Joylashuv',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<Region>(
+            decoration: const InputDecoration(
+              labelText: 'Hudud',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.location_on_outlined),
+            ),
+            hint: const Text('Hududni tanlang (ixtiyoriy)'),
+            initialValue: _selectedRegion,
+            items: [
+              const DropdownMenuItem<Region>(
+                value: null,
+                child: Text('Tanlanmagan'),
+              ),
+              ..._regions.map((Region reg) {
+                return DropdownMenuItem<Region>(
+                  value: reg,
+                  child: Text(reg.nameUz),
+                );
+              }),
+            ],
+            onChanged: (Region? newReg) {
+              setState(() {
+                _selectedRegion = newReg;
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _addressController,
+            decoration: const InputDecoration(
+              labelText: 'Manzil',
+              hintText: 'Masalan: Samarqand viloyati, Oqdaryo tumani...',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.map_outlined),
+            ),
+            validator: (val) {
+              return _validateAddress(val);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStep5Review() {
+    final priceStr = _priceController.text.trim().isNotEmpty
+        ? '${_priceController.text.trim()} UZS'
+        : 'Kiritilmagan';
+    final unitStr = _unitController.text.trim().isNotEmpty
+        ? _unitController.text.trim()
+        : 'Kiritilmagan';
+    final phoneStr = _phoneController.text.trim().isNotEmpty
+        ? _phoneController.text.trim()
+        : 'Kiritilmagan';
+    final addressStr = _addressController.text.trim().isNotEmpty
+        ? _addressController.text.trim()
+        : 'Kiritilmagan';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Ma’lumotlarni tasdiqlang',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.grey[200]!),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  flex: 3,
-                  key: const ValueKey('priceAmountKey'),
-                  child: TextFormField(
-                    controller: _priceController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Narxi',
-                      hintText: '0.00',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.payments_outlined),
-                    ),
-                    validator: (val) {
-                      if (val != null && val.trim().isNotEmpty) {
-                        final numValue = double.tryParse(val.trim());
-                        if (numValue == null) {
-                          return 'Noto‘g‘ri son format';
-                        }
-                        if (numValue <= 0) {
-                          return 'Narx 0 dan katta bo‘lsin';
-                        }
-                      }
-                      return null;
-                    },
-                  ),
+                _buildReviewItem(
+                  'Kategoriya',
+                  _selectedCategory?.nameUz ?? 'Kiritilmagan',
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[400]!),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Text(
-                      'UZS',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                  ),
+                const Divider(height: 24),
+                _buildReviewItem(
+                  'E’lon turi',
+                  _getTypeLabel(_listingType ?? ''),
                 ),
+                const Divider(height: 24),
+                _buildReviewItem('Sarlavha', _titleController.text.trim()),
+                const Divider(height: 24),
+                _buildReviewItem(
+                  'Tavsif',
+                  _descriptionController.text.trim().isNotEmpty
+                      ? _descriptionController.text.trim()
+                      : 'Kiritilmagan',
+                ),
+                const Divider(height: 24),
+                _buildReviewItem('Narxi', priceStr),
+                const Divider(height: 24),
+                _buildReviewItem('O‘lchov birligi', unitStr),
+                const Divider(height: 24),
+                _buildReviewItem('Bog‘lanish telefoni', phoneStr),
+                const Divider(height: 24),
+                _buildReviewItem(
+                  'Hudud',
+                  _selectedRegion?.nameUz ?? 'Kiritilmagan',
+                ),
+                const Divider(height: 24),
+                _buildReviewItem('Manzil', addressStr),
               ],
             ),
-            const SizedBox(height: 16),
-
-            // Unit
-            TextFormField(
-              controller: _unitController,
-              decoration: const InputDecoration(
-                labelText: 'O‘lchov birligi',
-                hintText: 'Masalan: kg, dona, soat, kun',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.scale_outlined),
-              ),
-              validator: (val) {
-                if (val != null && val.trim().length > 30) {
-                  return 'Ko‘pi bilan 30 ta belgi kiriting';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-
-            const Text(
-              'Manzil va Aloqa',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-
-            // Region Dropdown
-            DropdownButtonFormField<Region>(
-              decoration: const InputDecoration(
-                labelText: 'Hudud',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.location_on_outlined),
-              ),
-              hint: const Text('Hududni tanlang (ixtiyoriy)'),
-              initialValue: _selectedRegion,
-              items: [
-                const DropdownMenuItem<Region>(
-                  value: null,
-                  child: Text('Tanlanmagan'),
-                ),
-                ..._regions.map((Region reg) {
-                  return DropdownMenuItem<Region>(
-                    value: reg,
-                    child: Text(reg.nameUz),
-                  );
-                }),
-              ],
-              onChanged: (Region? newReg) {
-                setState(() {
-                  _selectedRegion = newReg;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Address
-            TextFormField(
-              controller: _addressController,
-              decoration: const InputDecoration(
-                labelText: 'Manzil',
-                hintText: 'Masalan: Oqdaryo tumani, Dahbed qo‘rg‘oni',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.map_outlined),
-              ),
-              validator: (val) {
-                if (val != null && val.trim().length > 255) {
-                  return 'Ko‘pi bilan 255 ta belgi kiriting';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Phone
-            TextFormField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Bog‘lanish telefoni',
-                hintText: '+998901234567',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.phone),
-              ),
-              validator: (val) {
-                if (val != null && val.trim().isNotEmpty) {
-                  final reg = RegExp(r'^\+998\d{9}$');
-                  if (!reg.hasMatch(val.trim())) {
-                    return 'Telefon formati xato (masalan: +998901234567)';
-                  }
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 32),
-
-            // Submit Button
-            AppButton(
-              label: 'E’lonni yuborish',
-              fullWidth: true,
-              loading: _isSubmitting,
-              onPressed: _isSubmitting ? null : _submitForm,
-            ),
-            const SizedBox(height: 40),
-          ],
+          ),
         ),
-      ),
+      ],
+    );
+  }
+
+  Widget _buildReviewItem(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomButtons() {
+    final isLastStep = _currentStep == 4;
+    final isNextDisabled = _currentStep == 0 && _categories.isEmpty;
+
+    return Row(
+      children: [
+        if (_currentStep > 0) ...[
+          Expanded(
+            child: AppButton(
+              label: 'Ortga',
+              variant: AppButtonVariant.outlined,
+              onPressed: _isSubmitting ? null : _prevStep,
+            ),
+          ),
+          const SizedBox(width: 12),
+        ],
+        Expanded(
+          child: AppButton(
+            label: isLastStep ? 'E’lonni yuborish' : 'Keyingi',
+            loading: isLastStep ? _isSubmitting : false,
+            onPressed: isNextDisabled
+                ? null
+                : () {
+                    if (isLastStep) {
+                      _submitForm();
+                    } else {
+                      _nextStep();
+                    }
+                  },
+          ),
+        ),
+      ],
     );
   }
 
@@ -502,7 +924,8 @@ class _CreateListingPageState extends ConsumerState<CreateListingPage> {
         AppButton(
           label: 'Rasm qo‘shish',
           fullWidth: true,
-          onPressed: () => context.go('/listings/${_createdListing!.id}/images'),
+          onPressed: () =>
+              context.go('/listings/${_createdListing!.id}/images'),
         ),
         const SizedBox(height: 12),
         SizedBox(
