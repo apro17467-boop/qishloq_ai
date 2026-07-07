@@ -59,3 +59,10 @@ export type VerifyOtpResponse = {
 export type MeResponse = {
   user: AuthUser;
 };
+
+export type DashboardStats = {
+  usersTotal: number;
+  pendingListings: number;
+  activeListings: number;
+  openComplaints: number;
+};

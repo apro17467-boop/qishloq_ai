@@ -1,6 +1,6 @@
 # QISHLOQ AI Admin Panel
 
-Admin panel skeleton for the QISHLOQ AI backend MVP. Login is wired to the backend auth API, while protected layouts and full admin pages are intentionally left for later steps.
+Admin panel skeleton for the QISHLOQ AI backend MVP. Login, protected dashboard access, logout, and dashboard totals are wired to existing backend APIs, while full admin list pages are intentionally left for later steps.
 
 ## Tech Stack
 
@@ -64,14 +64,27 @@ The access token is stored in browser `localStorage` under `qishloq_ai_admin_tok
 
 The header includes a `Chiqish` button. Logout clears `qishloq_ai_admin_token` from localStorage and redirects to `/login`.
 
-Next step: connect dashboard, listings, complaints, and users screens to real backend APIs.
+## Dashboard Data
+
+The dashboard cards read real totals from existing backend APIs. The app uses `meta.total` from paginated responses and does not require a dedicated dashboard endpoint yet.
+
+Used endpoints:
+
+- `GET /admin/users?page=1&limit=1`
+- `GET /admin/listings?page=1&limit=1&status=PENDING`
+- `GET /admin/listings?page=1&limit=1&status=ACTIVE`
+- `GET /admin/complaints?page=1&limit=1&status=OPEN`
+
+The backend and admin panel must run at the same time for dashboard data to load.
+
+Next step: connect listings, complaints, and users screens to real backend APIs.
 
 ## Current Scope
 
 - Login screen connected to backend OTP auth
-- Protected dashboard skeleton
+- Protected dashboard with real backend totals
 - Admin layout shell
 - Shared UI primitives
 - API and environment helpers
 
-Next step: connect dashboard real APIs.
+Next step: connect admin list screens.
