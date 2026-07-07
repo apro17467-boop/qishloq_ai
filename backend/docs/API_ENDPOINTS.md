@@ -7,7 +7,51 @@
 ## Auth
 
 - `POST /auth/request-otp`
+  - Request Body: `{"phone": "+998XXXXXXXXX"}`
+  - Response (Development Mode: `SMS_PROVIDER=dev`):
+    ```json
+    {
+      "message": "OTP code generated",
+      "expiresInMinutes": 5,
+      "devCode": "111111",
+      "devOtp": "111111"
+    }
+    ```
+  - Response (Real Provider Mode):
+    ```json
+    {
+      "message": "OTP code generated",
+      "expiresInMinutes": 5
+    }
+    ```
 - `POST /auth/verify-otp`
+  - Request Body:
+    ```json
+    {
+      "phone": "+998XXXXXXXXX",
+      "code": "111111",
+      "role": "FARMER",
+      "fullName": "Ali Valiyev",
+      "address": "Oqdaryo tumani"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "accessToken": "jwt_token_here",
+      "user": {
+        "id": "user-uuid",
+        "phone": "+998XXXXXXXXX",
+        "role": "FARMER",
+        "isVerified": true,
+        "profile": {
+          "fullName": "Ali Valiyev",
+          "regionId": null,
+          "address": "Oqdaryo tumani"
+        }
+      }
+    }
+    ```
 - `GET /auth/me`
 
 ## Reference

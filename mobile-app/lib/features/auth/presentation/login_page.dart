@@ -103,8 +103,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       final authService = ref.read(authServiceProvider);
       final response = await authService.requestOtp(phone);
       setState(() {
-        _successMessage = response.message;
-        _devCode = response.devCode;
+        _devCode = response.devCode ?? response.devOtp;
+        _successMessage = _devCode != null
+            ? response.message
+            : 'SMS kod yuborildi. Telefoningizni tekshiring.';
         _otpRequested = true;
       });
     } on ApiException catch (e) {

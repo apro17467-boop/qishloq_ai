@@ -11,11 +11,13 @@ import { PrismaService } from '../database/prisma.service';
 import { RequestOtpDto } from './dto/request-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { generateOtpCode, hashOtpCode, isUzbekPhone } from './utils/otp.util';
+import { SmsService } from '../sms/sms.service';
 
 export interface RequestOtpResponse {
   message: 'OTP code generated';
   expiresInMinutes: number;
   devCode?: string;
+  devOtp?: string;
 }
 
 interface JwtPayload {
@@ -70,15 +72,14 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly smsService: SmsService,
   ) {}
 
   async requestOtp(dto: RequestOtpDto): Promise<RequestOtpResponse> {
     this.assertUzbekPhone(dto.phone);
 
     const expiresInMinutes = this.getOtpExpiresMinutes();
-    const code = this.isDevelopment()
-      ? (process.env.DEV_OTP_CODE ?? '111111')
-      : generateOtpCode();
+    const code = this.getOtpCodeForProvider();
     const codeHash = hashOtpCode(code, this.getOtpSecret());
     const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
 
@@ -90,12 +91,24 @@ export class AuthService {
       },
     });
 
-    // TODO: Send OTP through SMS provider in production.
+    await this.smsService.sendOtp(dto.phone, code);
+
+    const providerName = (process.env.SMS_PROVIDER ?? 'dev').toLowerCase();
+    const isDevProvider = providerName === 'dev';
+
     return {
       message: 'OTP code generated',
       expiresInMinutes,
-      ...(this.isDevelopment() ? { devCode: code } : {}),
+      ...(isDevProvider ? { devCode: code, devOtp: code } : {}),
     };
+  }
+
+  private getOtpCodeForProvider(): string {
+    const provider = (process.env.SMS_PROVIDER ?? 'dev').toLowerCase();
+    if (provider === 'dev') {
+      return process.env.SMS_DEV_CODE ?? process.env.DEV_OTP_CODE ?? '111111';
+    }
+    return generateOtpCode();
   }
 
   async verifyOtp(dto: VerifyOtpDto): Promise<VerifyOtpResponse> {

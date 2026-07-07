@@ -36,18 +36,22 @@ class RequestOtpResponse {
   final String message;
   final int? expiresInMinutes;
   final String? devCode;
+  final String? devOtp;
 
   const RequestOtpResponse({
     required this.message,
     this.expiresInMinutes,
     this.devCode,
+    this.devOtp,
   });
 
   factory RequestOtpResponse.fromJson(Map<String, dynamic> json) {
+    final parsedDevCode = json['devCode']?.toString() ?? json['devOtp']?.toString();
     return RequestOtpResponse(
       message: json['message'] as String? ?? 'Kodni yuborish muvaffaqiyatli yakunlandi',
       expiresInMinutes: json['expiresInMinutes'] as int?,
-      devCode: json['devCode']?.toString(),
+      devCode: parsedDevCode,
+      devOtp: json['devOtp']?.toString(),
     );
   }
 }

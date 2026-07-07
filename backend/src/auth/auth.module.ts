@@ -4,6 +4,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from './guards/optional-jwt-auth.guard';
+import { SmsModule } from '../sms/sms.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { OptionalJwtAuthGuard } from './guards/optional-jwt-auth.guard';
         expiresIn: (process.env.JWT_EXPIRES_IN ?? '7d') as never,
       },
     }),
+    SmsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtAuthGuard, OptionalJwtAuthGuard],

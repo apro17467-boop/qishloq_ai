@@ -512,7 +512,7 @@ Admin AI questions endpointlari uchun `Authorization: Bearer <adminAccessToken>`
 
 Endpointlar read-only: admin barcha foydalanuvchilarning AI savollarini monitoring qiladi. Real AI provider hali ulanmagan, local/mock provider ishlaydi.
 
-## Auth
+## Auth & SMS OTP Integration
 
 ```bash
 POST /auth/request-otp
@@ -526,6 +526,37 @@ POST /auth/verify-otp
 GET /auth/me
 ```
 
-Development rejimida `request-otp` javobida `devCode` qaytadi. Haqiqiy SMS provider hali ulanmagan.
+### SMS Provider Environment Configurations
+The backend authentication implements a modular SMS OTP delivery system that supports different providers depending on the configuration.
 
-`/auth/me` uchun `Authorization: Bearer <accessToken>` header kerak.
+In your `.env` (or `.env.production` in production):
+```bash
+# SMS Provider choice: 'dev' or 'generic' (or 'eskiz')
+SMS_PROVIDER=dev
+
+# In dev mode, you can customize the hardcoded code (defaults to 111111)
+SMS_DEV_CODE=111111
+
+# Sender alpha name
+SMS_FROM=QISHLOQAI
+
+# Real SMS HTTP API Integration parameters (Required in 'generic' / 'eskiz' mode)
+SMS_API_BASE_URL=
+SMS_API_TOKEN=
+SMS_API_LOGIN=
+SMS_API_PASSWORD=
+SMS_TIMEOUT_MS=10000
+```
+
+### Dev vs Production Behavior
+- **Development Mode (`SMS_PROVIDER=dev`)**: 
+  - Real SMS messages are **not** sent.
+  - The OTP code is displayed inside the terminal logs.
+  - The API response payload returns `devOtp` and `devCode` for testing: `{"message":"OTP code generated","expiresInMinutes":5,"devCode":"111111","devOtp":"111111"}`.
+- **Production/Real Provider Mode (`SMS_PROVIDER=generic` or `eskiz`)**:
+  - Secure random 6-digit OTP codes are generated.
+  - OTP codes are sent via HTTP requests using `SMS_API_BASE_URL` with credentials.
+  - The API response payload **omits** the code completely: `{"message":"OTP code generated","expiresInMinutes":5}`.
+  - OTP codes are never logged to the console/stdout to prevent credentials/security leaks.
+  - Real SMS provider credentials must be configured securely on the deployment machine and should **never** be committed to git.
+
