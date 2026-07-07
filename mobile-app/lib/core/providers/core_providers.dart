@@ -12,6 +12,7 @@ import 'package:qishloq_ai_mobile/features/health/data/health_service.dart';
 import 'package:qishloq_ai_mobile/features/listings/data/listing_service.dart';
 import 'package:qishloq_ai_mobile/features/regions/data/region_service.dart';
 import 'package:qishloq_ai_mobile/features/sellers/data/seller_service.dart';
+import 'package:qishloq_ai_mobile/features/chat/data/chat_service.dart';
 
 final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
   return const FlutterSecureStorage();
@@ -69,4 +70,9 @@ final regionServiceProvider = Provider<RegionService>((ref) {
 final aiQuestionServiceProvider = Provider<AiQuestionService>((ref) {
   final apiClient = ref.watch(apiClientProvider);
   return AiQuestionService(apiClient);
+});
+
+final chatServiceProvider = Provider<ChatService>((ref) {
+  final apiClient = ref.watch(apiClientProvider);
+  return ChatService(apiClient);
 });

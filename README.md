@@ -27,3 +27,22 @@ Step 71 — Chat preparation decision
 - MVP barqarorligi va tezroq integratsiya uchun **REST message system** (Variant A) tanlandi.
 - Batafsil ma'lumotlar uchun [Chat Architecture Decision Document](docs/CHAT_ARCHITECTURE_DECISION.md) yaratildi (DB modellar, endpointlar, mobile flowlar va xavfsizlik cheklistlari belgilandi).
 - Keyingi qadam (Step 72): REST chat backend foundation.
+
+
+
+
+
+
+
+Step 73 — Mobile Chat UI Foundation
+
+- REST chat uchun mobile data layer yaratildi.
+- ChatService qo‘shildi.
+- ChatListPage yaratildi.
+- ChatPage yaratildi.
+- /chat va /chat/:conversationId routelari qo‘shildi.
+- ListingDetailPage ichiga “Xabar yozish” tugmasi qo‘shildi.
+- ProfilePage ichiga “Xabarlar” quick action qo‘shildi.
+- REST-only ishlaydi, WebSocket qo‘shilmadi.
+- Backend/admin/database o‘zgarmadi.
+- Keyingi qadam: Chat polish.

@@ -13,6 +13,8 @@ import 'package:qishloq_ai_mobile/features/onboarding/presentation/onboarding_pa
 import 'package:qishloq_ai_mobile/features/profile/presentation/profile_page.dart';
 import 'package:qishloq_ai_mobile/features/sellers/presentation/seller_profile_page.dart';
 import 'package:qishloq_ai_mobile/features/splash/presentation/splash_page.dart';
+import 'package:qishloq_ai_mobile/features/chat/presentation/chat_list_page.dart';
+import 'package:qishloq_ai_mobile/features/chat/presentation/chat_page.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -81,5 +83,16 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const AiAdvicePage(),
     ),
     GoRoute(path: '/profile', builder: (context, state) => const ProfilePage()),
+    GoRoute(
+      path: '/chat',
+      builder: (context, state) => const ChatListPage(),
+    ),
+    GoRoute(
+      path: '/chat/:conversationId',
+      builder: (context, state) {
+        final conversationId = state.pathParameters['conversationId'] ?? '';
+        return ChatPage(conversationId: conversationId);
+      },
+    ),
   ],
 );

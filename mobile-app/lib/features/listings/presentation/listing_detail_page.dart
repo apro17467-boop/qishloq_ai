@@ -23,6 +23,7 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
   Listing? _listing;
   int _currentImageIndex = 0;
   bool _isFavoriteUpdating = false;
+  bool _isCreatingConversation = false;
 
   @override
   void initState() {
@@ -209,6 +210,53 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
         setState(() {
           _isFavoriteUpdating = false;
         });
+      }
+    }
+  }
+
+  Future<void> _startConversation(String listingId) async {
+    final authState = ref.read(authControllerProvider);
+    if (!authState.isAuthenticated) {
+      context.push('/login');
+      return;
+    }
+
+    setState(() {
+      _isCreatingConversation = true;
+    });
+
+    try {
+      final chatService = ref.read(chatServiceProvider);
+      final conversation = await chatService.createConversation(listingId);
+      if (mounted) {
+        setState(() {
+          _isCreatingConversation = false;
+        });
+        context.push('/chat/${conversation.id}');
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        setState(() {
+          _isCreatingConversation = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isCreatingConversation = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceFirst('Exception: ', '')),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     }
   }
@@ -656,6 +704,10 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
       return null;
     }
 
+    final currentUserId = ref.read(authControllerProvider).user?.id;
+    final isOwnListing = currentUserId == seller.id;
+    final showChatButton = !isOwnListing && listing.status == 'ACTIVE';
+
     return Card(
       elevation: 0,
       margin: EdgeInsets.zero,
@@ -725,6 +777,35 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
               ],
             ),
             const SizedBox(height: 14),
+            if (showChatButton) ...[
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _isCreatingConversation
+                      ? null
+                      : () => _startConversation(listing.id),
+                  icon: _isCreatingConversation
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Icon(Icons.chat_bubble_outline, size: 18),
+                  label: const Text('Xabar yozish'),
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(

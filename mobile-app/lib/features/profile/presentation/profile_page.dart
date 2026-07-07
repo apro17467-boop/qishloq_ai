@@ -377,6 +377,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         ),
         const Divider(height: 1),
         _ActionTile(
+          icon: Icons.chat_bubble_outline,
+          label: 'Xabarlar',
+          onTap: () => context.push('/chat'),
+        ),
+        const Divider(height: 1),
+        _ActionTile(
           icon: Icons.favorite_border,
           label: 'Sevimlilar',
           onTap: () => context.push('/favorites'),
