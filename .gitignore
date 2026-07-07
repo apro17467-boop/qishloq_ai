@@ -17,6 +17,8 @@ eggs/
 lib/
 !admin-panel/src/lib/
 !admin-panel/src/lib/**
+!mobile-app/lib/
+!mobile-app/lib/**
 lib64/
 parts/
 sdist/

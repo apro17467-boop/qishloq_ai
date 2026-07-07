@@ -38,9 +38,9 @@ flutter run
 - `/login` → LoginPage (Telefon raqam kiritish va Demo rejimda kirish)
 - `/home` → HomePage (Asosiy bo‘limlar - E'lonlar, AI maslahat, Profil)
 
-## API va Ma'lumotlar ulanishi (Step 46)
+## API va Ma'lumotlar ulanishi (Step 46 & 47)
 
-Ilovada API Client infratuzilmasi (Dio va Secure Storage asosida) to‘liq sozlandi.
+Ilovada API Client infratuzilmasi va Mobil Autentifikatsiya (OTP Request) tizimi sozlandi.
 
 ### Konfiguratsiya va Base URL
 
@@ -48,6 +48,27 @@ Ilovada API Client infratuzilmasi (Dio va Secure Storage asosida) to‘liq sozla
 - **Android Emulator:** Android emulatoridan host kompyuterdagi backend localhostiga ulanish uchun maxsus `10.0.2.2` IP manzili ishlatiladi.
 - **Localhost (Web/Desktop):** Local hostdan test qilish uchun `http://localhost:3000` ishlatilishi mumkin.
 - **Real Qurilma (Device):** Real telefondan test qilish uchun host kompyuter joylashgan Wi-Fi LAN IP manzili (masalan: `http://192.168.1.X:3000`) ko‘rsatilishi lozim.
+
+### Autentifikatsiya (Step 47)
+
+- **Endpoint:** `POST /auth/request-otp`
+- **Request Body:**
+  ```json
+  {
+    "phone": "+998901234567"
+  }
+  ```
+- **Response Format (Development):**
+  ```json
+  {
+    "message": "OTP code generated",
+    "expiresInMinutes": 5,
+    "devCode": "111111"
+  }
+  ```
+- **LoginPage oqimi:** Foydalanuvchi telefon raqamini kiritib "OTP olish" tugmasini bosganida API-ga so'rov jo'natiladi. Muvaffaqiyatli javob kelganda, yashil xabar, `devCode` mavjud bo‘lsa (dev rejimda) ko'k info box-da "Dev OTP" ko'rsatiladi va OTP kodini tasdiqlash uchun yangi input interfeysi ochiladi.
+- **Token Saqlash:** Hozircha OTP request bosqichida token olinmaydi va saqlanmaydi.
+- **OTP Verify:** Kodni tasdiqlash funksiyasi 48-qadamda ulanadi.
 
 ### Kutubxonalar (Dependencies)
 
@@ -61,7 +82,8 @@ Ilovada API Client infratuzilmasi (Dio va Secure Storage asosida) to‘liq sozla
 - `HealthService` orqali `/health` endpointiga ulanish tekshiriladi.
 - **Debug:** `HomePage` ostidagi **"Backend holatini tekshirish"** tugmasi orqali local backend ishlayotganini /health orqali tekshirish mumkin.
 
-## Keyingi qadam (Step 47)
+## Keyingi qadam (Step 48)
 
-- Auth API ulanishini integratsiya qilish (OTP so'rov yuborish va tasdiqlash, olingan tokenni saqlash).
+- OTP kodini tasdiqlash (OTP Verify) tizimini ulash, auth tokenni xavfsiz saqlash va tizimga to‘liq kirish oqimini tugallash.
+
 
