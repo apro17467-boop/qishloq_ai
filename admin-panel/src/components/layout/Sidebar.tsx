@@ -7,7 +7,7 @@ const menuItems = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Listings", href: "/listings" },
   { label: "Complaints", href: "/complaints" },
-  { label: "Users", href: "#", active: false },
+  { label: "Users", href: "/users" },
   { label: "AI Questions", href: "#", active: false },
   { label: "Settings", href: "#", active: false }
 ];

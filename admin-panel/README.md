@@ -186,6 +186,12 @@ Pastda `Oldingi` / `Keyingi` tugmalari va jami hisobi ko'rsatiladi.
 - `IN_REVIEW` shikoyatlarni `RESOLVED` yoki `REJECTED` qilish mumkin.
 - `RESOLVED` / `REJECTED` holatlar yakuniy hisoblanadi.
 - Backend DTO qabul qiladigan parametr faqat `{ status }`.
+### Admin Users Monitoring (Step 40)
+
+- `GET /admin/users` va `GET /admin/users/:id` endpointlari ulangan.
+- Rol, status (isActive), tasdiqlangan (isVerified) va qidiruv (search) filtrlari qo'shilgan.
+- Foydalanuvchi ma'lumotlarini to'liq modal oynada ko'rish imkoniyati mavjud.
+- Bu bosqichda foydalanuvchini o'chirish/bloklash yoki rolni o'zgartirish qo'shilmagan.
 
 ## Current Scope
 
@@ -193,8 +199,10 @@ Pastda `Oldingi` / `Keyingi` tugmalari va jami hisobi ko'rsatiladi.
 - Protected dashboard with real backend totals
 - Protected listings table with filters, pagination, and moderation
 - Protected complaints table with status filter and pagination
+- Protected users list with search, filters, pagination, and detail view modal
 - Admin layout shell (Sidebar, Header, AdminShell)
 - Shared UI primitives (Badge, Button, Card, Input)
 - API and environment helpers
 
-Next step: complaint status update (Step 39).
+Next step: AI Questions (Step 41).
+

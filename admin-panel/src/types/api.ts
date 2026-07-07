@@ -209,3 +209,74 @@ export type UpdateComplaintStatusResponse = {
     updatedAt: string;
   };
 };
+
+// ─── Admin Users ──────────────────────────────────────────────────────────────
+
+export type AdminUser = {
+  id: string;
+  phone: string;
+  role: UserRole;
+  isActive: boolean;
+  isVerified: boolean;
+  createdAt: string;
+  updatedAt?: string | null;
+  profile?: {
+    fullName?: string | null;
+    avatarUrl?: string | null;
+    address?: string | null;
+    region?: {
+      id: string;
+      nameUz: string;
+      type: string;
+    } | null;
+  } | null;
+  stats: {
+    listingsCount: number;
+    complaintsCount: number;
+    aiQuestionsCount: number;
+  };
+};
+
+export type AdminUserDetailRecentListing = {
+  id: string;
+  title: string;
+  type: string;
+  status: string;
+  createdAt: string;
+};
+
+export type AdminUserDetailRecentComplaint = {
+  id: string;
+  reason: string;
+  status: string;
+  createdAt: string;
+};
+
+export type AdminUserDetailRecentAiQuestion = {
+  id: string;
+  question: string;
+  status: string;
+  createdAt: string;
+};
+
+export type AdminUserDetail = AdminUser & {
+  recentListings: AdminUserDetailRecentListing[];
+  recentComplaints: AdminUserDetailRecentComplaint[];
+  recentAiQuestions: AdminUserDetailRecentAiQuestion[];
+};
+
+export type AdminUsersQuery = {
+  page: number;
+  limit: number;
+  role?: UserRole | "";
+  isActive?: boolean;
+  isVerified?: boolean;
+  search?: string;
+};
+
+export type AdminUsersResponse = PaginatedResponse<AdminUser>;
+
+export type AdminUserDetailResponse = {
+  data: AdminUserDetail;
+};
+
