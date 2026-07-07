@@ -1,6 +1,6 @@
 # QISHLOQ AI Admin Panel
 
-Admin panel skeleton for the QISHLOQ AI backend MVP. Login, protected dashboard access, logout, and dashboard totals are wired to existing backend APIs, while full admin list pages are intentionally left for later steps.
+Admin panel skeleton for the QISHLOQ AI backend MVP. Login, protected dashboard access, logout, dashboard totals, listings, complaints, users, and AI questions monitoring are wired to existing backend APIs.
 
 ## Tech Stack
 
@@ -193,6 +193,22 @@ Pastda `Oldingi` / `Keyingi` tugmalari va jami hisobi ko'rsatiladi.
 - Foydalanuvchi ma'lumotlarini to'liq modal oynada ko'rish imkoniyati mavjud.
 - Bu bosqichda foydalanuvchini o'chirish/bloklash yoki rolni o'zgartirish qo'shilmagan.
 
+## AI Questions Monitoring
+
+`/ai-questions` sahifasi mavjud backend monitoring endpointlariga ulangan:
+
+- `GET /admin/ai-questions`
+- `GET /admin/ai-questions/:id`
+
+Qo'llab-quvvatlangan UI imkoniyatlari:
+
+- Status filter: `PENDING`, `ANSWERED`, `FAILED`
+- Search: savol yoki javob bo'yicha, faqat `Qidirish` bosilganda request yuboriladi
+- Pagination: `Oldingi`, `Keyingi`, page / totalPages va total count
+- Detail modal: savol, javob, status, disclaimer, foydalanuvchi, createdAt va updatedAt
+
+Bu bosqichda AI question status update action yo'q. Backendda real AI provider hali ulanmagan, local/mock provider ishlayapti.
+
 ## Current Scope
 
 - Login screen connected to backend OTP auth
@@ -200,9 +216,9 @@ Pastda `Oldingi` / `Keyingi` tugmalari va jami hisobi ko'rsatiladi.
 - Protected listings table with filters, pagination, and moderation
 - Protected complaints table with status filter and pagination
 - Protected users list with search, filters, pagination, and detail view modal
+- Protected AI questions list with status/search filters, pagination, and detail view modal
 - Admin layout shell (Sidebar, Header, AdminShell)
 - Shared UI primitives (Badge, Button, Card, Input)
 - API and environment helpers
 
-Next step: AI Questions (Step 41).
-
+Next step: polish and dashboard/admin workflow improvements.

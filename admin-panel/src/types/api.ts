@@ -67,6 +67,44 @@ export type DashboardStats = {
   openComplaints: number;
 };
 
+// ─── Admin AI Questions ──────────────────────────────────────────────────────
+
+export type AiQuestionStatus = "PENDING" | "ANSWERED" | "FAILED";
+
+export type AdminAiQuestion = {
+  id: string;
+  userId?: string | null;
+  question: string;
+  answer?: string | null;
+  status: AiQuestionStatus;
+  disclaimerShown: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    id: string;
+    phone: string;
+    role: UserRole;
+    profile?: {
+      fullName?: string | null;
+      address?: string | null;
+    } | null;
+  } | null;
+};
+
+export type AdminAiQuestionsQuery = {
+  page: number;
+  limit: number;
+  status?: AiQuestionStatus | "";
+  userId?: string;
+  search?: string;
+};
+
+export type AdminAiQuestionsResponse = PaginatedResponse<AdminAiQuestion>;
+
+export type AdminAiQuestionDetailResponse = {
+  data: AdminAiQuestion;
+};
+
 export type ListingStatus = "PENDING" | "ACTIVE" | "REJECTED" | "ARCHIVED";
 
 export type ListingType =
@@ -279,4 +317,3 @@ export type AdminUsersResponse = PaginatedResponse<AdminUser>;
 export type AdminUserDetailResponse = {
   data: AdminUserDetail;
 };
-
