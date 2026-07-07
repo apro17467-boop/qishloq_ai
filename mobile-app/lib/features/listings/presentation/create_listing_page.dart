@@ -10,6 +10,7 @@ import 'package:qishloq_ai_mobile/features/regions/data/region_models.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_button.dart';
 
 import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
+import 'package:qishloq_ai_mobile/shared/widgets/app_bottom_nav.dart';
 
 class CreateListingPage extends ConsumerStatefulWidget {
   const CreateListingPage({super.key});
@@ -179,14 +180,11 @@ class _CreateListingPageState extends ConsumerState<CreateListingPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('E’lon joylash'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/home'),
-        ),
       ),
       body: SafeArea(
         child: _buildBody(),
       ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 2),
     );
   }
 

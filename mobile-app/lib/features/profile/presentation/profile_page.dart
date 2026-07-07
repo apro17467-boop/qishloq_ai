@@ -6,6 +6,7 @@ import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/features/auth/data/auth_models.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
+import 'package:qishloq_ai_mobile/shared/widgets/app_bottom_nav.dart';
 
 // ... (qolgan o'zgarmaslar)
 const Map<String, String> _roleLabels = {
@@ -124,10 +125,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mening profilim'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/home'),
-        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_outlined),
@@ -171,6 +168,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ),
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 4),
     );
   }
 

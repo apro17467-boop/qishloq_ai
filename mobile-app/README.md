@@ -466,3 +466,42 @@ Mobil ilovani local backend serverga ulanib ishlashini tekshirish uchun local te
 
 ### Keyingi qadam (Step 62)
 - Local pilot test natijasida topilgan xatoliklarni tuzatish va foydalanuvchilar fikrlari asosida takomillashtirish.
+
+## UX Foundation & Bottom Navigation (Step 62)
+
+Mobil ilova sahifalari o'rtasida navigatsiya qilish qulayligini ta'minlash uchun bottom navigation va premium dizayn asoslari joriy etildi:
+
+1. **AppBottomNav Widgeti:**
+   - GoRouter yordamida context.go() bilan ishlaydigan navigatsiya paneli yaratildi. Stack oshib ketishini oldini oladi.
+   - Bosh sahifa, E'lonlar, E'lon Joylash, AI maslahat va Profil tablari o'rnatildi.
+2. **Scaffold Integratsiyasi:**
+   - HomePage, ListingsPage, CreateListingPage, AiAdvicePage va ProfilePage sahifalariga bottom navigation bar qo'shildi.
+3. **AppBar va Navigatsiyani tozalash:**
+   - Tablar o'rtasida keraksiz back-buttonlar olib tashlandi.
+
+## Listings UI Refinement (Step 63)
+
+E'lonlar bo'limi (ListingsPage) bozordagi zamonaviy e'lonlar platformalari (masalan, OLX) uslubidan ilhomlangan holda yanada qulay va chiroyli qilindi:
+
+1. **Search Panel yangilanishi:**
+   - Qidiruv maydoni chiroyli Card dizayni ichiga o'tkazildi.
+   - Placeholder sifatida "E'lon qidirish..." o'rnatildi, chap tomonda search icon, o'ng tomonda esa aniq va yorqin "Qidirish" tugmasi joylashtirildi.
+   - Qidiruv faqat "Qidirish" tugmasi bosilganda yoki klaviaturada submit bosilganda page 1 dan qayta yuklanadi.
+2. **Horizontal Type Chips:**
+   - Dropdown o'rniga horizontal scrollable ChoiceChip elementlari o'rnatildi.
+   - Tanlangan chip agro-yashil rangda, tanlanmagani esa oq fonda yengil kulrang border bilan ko'rinadi.
+   - Barchasi, Texnika ijarasi, Dehqon mahsulotlari, Chorva savdosi, Texnika savdosi, Agro xizmatlar turlari to'liq ishlaydi, backend enum qiymatlari o'zgarmasdan saqlangan.
+3. **Active Filters & Clear System:**
+   - Search matni va Kategoriya filtrlari faol bo'lganda yuqorida alohida o'chirish iconi bo'lgan chip formatida chiqadi.
+   - O'ng tomonda "Tozalash" buttoni chiqib, u barcha filtrlarni bir marta bosish orqali local state va URL query'lardan o'chirib yuboradi.
+4. **Marketplace Card Design:**
+   - E'lon cardlari border-radius 16px, oq background va ochiq kulrang ingichka border bilan chiroyli shaklga keltirildi.
+   - Chap tomonda 96x96 o'lchamdagi image (yoki rasm yuklanmagan bo'lsa agro-yashil agriculture placeholder iconi) joylashdi.
+   - O'ng tomonda e'lon turi badge, e'lon sanasi, 2 qatordan oshmaydigan title, yashil va qalin shriftda e'lon narxi, hudud/manzil va telefon raqami ko'rinadi.
+5. **Pagination & API Logic:**
+   - "Yana yuklash" tugmasi `AppButton` ga o'tkazilib, u yuklash jarayonida to'g'ri disabled/loading holatini ko'rsatadi hamda bottom nav bilan yopilib qolmaydi.
+   - Pull-to-refresh uchun `RefreshIndicator` qo'shildi.
+   - API va backend ulanish, GoRouter categories navigatsiyasi va detail pagega o'tish logikalari 100% buzilmasdan saqlab qolindi.
+
+### Keyingi qadam (Step 64)
+- E'lon tafsilotlari (Listing detail) sahifasi UX qismini to'liq redizayn qilish va chiroyli ko'rinishga keltirish.

@@ -5,6 +5,7 @@ import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_card.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
+import 'package:qishloq_ai_mobile/shared/widgets/app_bottom_nav.dart';
 
 // ... (qolgan o'zgarmaslar)
 const Map<String, String> _roleLabels = {
@@ -303,6 +304,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 0),
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
 import 'package:qishloq_ai_mobile/features/ai_advice/data/ai_question_models.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
+import 'package:qishloq_ai_mobile/shared/widgets/app_bottom_nav.dart';
 
 // ---------------------------------------------------------------------------
 // Status filter
@@ -187,10 +188,6 @@ class _AiAdvicePageState extends ConsumerState<AiAdvicePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('AI maslahat'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/home'),
-        ),
       ),
       body: SafeArea(
         child: Column(
@@ -201,6 +198,7 @@ class _AiAdvicePageState extends ConsumerState<AiAdvicePage> {
           ],
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 3),
     );
   }
 
