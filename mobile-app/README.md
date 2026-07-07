@@ -505,3 +505,36 @@ E'lonlar bo'limi (ListingsPage) bozordagi zamonaviy e'lonlar platformalari (masa
 
 ### Keyingi qadam (Step 64)
 - E'lon tafsilotlari (Listing detail) sahifasi UX qismini to'liq redizayn qilish va chiroyli ko'rinishga keltirish.
+
+## Listing Detail UX Polish (Step 64)
+
+E'lon tafsilotlari sahifasi (`ListingDetailPage`) foydalanuvchilar uchun qulay va professional ko'rinishga keltirildi:
+
+1. **Rasm Galereyasi (Image Gallery):**
+   - Agar e'lon rasmlari mavjud bo'lsa, 300px balandlikdagi premium PageView joriy etildi. Burchaklari pastki qismda 24px radiusda yumaloqlandi.
+   - O'ng pastki burchakda yorqin va qorong'u fonda `1 / 3` ko'rinishidagi rasm hisoblagichi (image counter) badge joylashtirildi.
+   - Rasm yuklanmagan bo'lsa, agro-yashil agriculture placeholder iconi va "Rasm qo'shilmagan" yozuvi bilan chiroyli placeholder chiqadi.
+2. **Asosiy ma'lumotlar kartasi (Main Info Card):**
+   - E'lon turi (type badge) va holati (status badge: ACTIVE -> yashil, PENDING -> sariq, REJECTED -> qizil, ARCHIVED -> kulrang) aniq ajratildi.
+   - Sarlavha (Title) qalin fontda va narx (`formattedPrice`) katta, yashil hamda ko'zga tashlanadigan qilib styled qilindi.
+   - Yaratilgan va oxirgi yangilangan vaqti aniq ko'rsatiladi.
+3. **Tavsif kartasi (Description Card):**
+   - Alohida card ichida "Tavsif" sarlavhasi ostida joylashdi. Tavsif kiritilmagan bo'lsa maxsus placeholder ko'rsatiladi.
+   - Matn font o'lchami 14 va line-height 1.5 qilinib, o'qilishi osonlashtirildi.
+4. **Joylashuv kartasi (Location Card):**
+   - Hudud (region name) va to'liq manzil (address) location icon yordamida alohida kartaga ajratildi.
+5. **Bog'lanish kartasi (Contact Card):**
+   - Telefon raqami yirik bold fontda chiqadi va yonida "Nusxalash" buttoni joylashdi.
+   - Telefon raqami buferga nusxalanadi va yengil SnackBar ko'rsatiladi.
+6. **Sticky Bottom Contact Bar:**
+   - Telefon raqam mavjud bo'lganda sahifa pastiga doimiy ko'rinadigan yopishqoq contact bar joylashtirildi.
+   - Telefon raqami ko'rinib, o'ng tomonda "Nusxalash" tugmasi turadi. Bu foydalanuvchi scroll qilganda ham doimiy foydalanish imkoniyatini beradi.
+   - Pastki gesture/nav panel bilan yopilib qolmasligi uchun dynamic safe bottom padding qo'shildi.
+7. **Loading/Error/404 tizimi:**
+   - 59-qadamdagi reusable state widgetlar bilan 100% integratsiya qilindi.
+   - 404 error yuz berganda "E'lon topilmadi yoki faol emas" va "E'lonlar ro'yxatiga qaytish" tugmasi saqlangan holda AppErrorState chiqadi.
+8. **API & Logic:**
+   - `GET /listings/:id` API call logic va uning router/detail oqimlari 100% buzilmasdan saqlab qolindi.
+
+### Keyingi qadam (Step 65)
+- Create listing step-by-step oqimi (Wizard flow) va listing yaratish UX polish.
