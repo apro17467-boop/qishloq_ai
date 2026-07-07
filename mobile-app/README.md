@@ -38,9 +38,9 @@ flutter run
 - `/login` → LoginPage (Telefon raqam kiritish va Demo rejimda kirish)
 - `/home` → HomePage (Asosiy bo‘limlar - E'lonlar, AI maslahat, Profil)
 
-## API va Ma'lumotlar ulanishi (Step 46 & 47)
+## API va Ma'lumotlar ulanishi (Step 46, 47 & 48)
 
-Ilovada API Client infratuzilmasi va Mobil Autentifikatsiya (OTP Request) tizimi sozlandi.
+Ilovada API Client infratuzilmasi va Mobil Autentifikatsiya (OTP Request & Verify) tizimi to‘liq sozlandi.
 
 ### Konfiguratsiya va Base URL
 
@@ -49,31 +49,30 @@ Ilovada API Client infratuzilmasi va Mobil Autentifikatsiya (OTP Request) tizimi
 - **Localhost (Web/Desktop):** Local hostdan test qilish uchun `http://localhost:3000` ishlatilishi mumkin.
 - **Real Qurilma (Device):** Real telefondan test qilish uchun host kompyuter joylashgan Wi-Fi LAN IP manzili (masalan: `http://192.168.1.X:3000`) ko‘rsatilishi lozim.
 
-### Autentifikatsiya (Step 47)
+### Autentifikatsiya (Step 47 & 48)
 
-- **Endpoint:** `POST /auth/request-otp`
-- **Request Body:**
-  ```json
-  {
-    "phone": "+998901234567"
-  }
-  ```
-- **Response Format (Development):**
-  ```json
-  {
-    "message": "OTP code generated",
-    "expiresInMinutes": 5,
-    "devCode": "111111"
-  }
-  ```
-- **LoginPage oqimi:** Foydalanuvchi telefon raqamini kiritib "OTP olish" tugmasini bosganida API-ga so'rov jo'natiladi. Muvaffaqiyatli javob kelganda, yashil xabar, `devCode` mavjud bo‘lsa (dev rejimda) ko'k info box-da "Dev OTP" ko'rsatiladi va OTP kodini tasdiqlash uchun yangi input interfeysi ochiladi.
-- **Token Saqlash:** Hozircha OTP request bosqichida token olinmaydi va saqlanmaydi.
-- **OTP Verify:** Kodni tasdiqlash funksiyasi 48-qadamda ulanadi.
+- **OTP Request Endpoint:** `POST /auth/request-otp`
+  - **Request Body:** `{"phone": "+998901234567"}`
+- **OTP Verify Endpoint:** `POST /auth/verify-otp`
+  - **Request Body:**
+    ```json
+    {
+      "phone": "+998901234567",
+      "code": "111111",
+      "role": "FARMER",
+      "fullName": "Mobile User",
+      "address": "Mobile app"
+    }
+    ```
+- **Get Me Endpoint:** `GET /auth/me` (Token faolligini va foydalanuvchi ma'lumotlarini tekshirish uchun)
+- **Token Saqlash:** Muvaffaqiyatli verify bo‘lgandan keyin olingan `accessToken` xavfsiz tarzda `flutter_secure_storage` kutubxonasidan foydalanib `qishloq_ai_mobile_token` kaliti ostida saqlanadi.
+- **Foydalanuvchi faolligi:** `/auth/me` orqali olingan foydalanuvchi statusi tekshiriladi (`user.isActive`). Agar u faol bo‘lmasa (`isActive == false`), token o‘chiriladi va login sahifasida xatolik ko‘rsatilib `/home` sahifasiga o‘tish to‘xtatiladi.
+- **Demo Davom Etish:** Vaqtincha test rejimida `/home`ga token-siz o‘tish tugmasi saqlab qolindi.
 
 ### Kutubxonalar (Dependencies)
 
 - `dio`: HTTP requestlar, headerlar, timeoutlar va xatoliklarni boshqarish uchun.
-- `flutter_secure_storage`: Foydalanuvchi tokenlarini xavfsiz saqlash (`qishloq_ai_mobile_token` kaliti bilan).
+- `flutter_secure_storage`: Foydalanuvchi tokenlarini xavfsiz saqlash.
 
 ### ApiClient va Token Storage xususiyatlari
 
@@ -82,8 +81,8 @@ Ilovada API Client infratuzilmasi va Mobil Autentifikatsiya (OTP Request) tizimi
 - `HealthService` orqali `/health` endpointiga ulanish tekshiriladi.
 - **Debug:** `HomePage` ostidagi **"Backend holatini tekshirish"** tugmasi orqali local backend ishlayotganini /health orqali tekshirish mumkin.
 
-## Keyingi qadam (Step 48)
+## Keyingi qadam (Step 49)
 
-- OTP kodini tasdiqlash (OTP Verify) tizimini ulash, auth tokenni xavfsiz saqlash va tizimga to‘liq kirish oqimini tugallash.
+- Ro'yxatdan o'tish jarayonida foydalanuvchi roli (FARMER, LIVESTOCK_OWNER va h.k.) va shaxsiy ma'lumotlarini to‘ldirish uchun Role/Profile formalarini yaratish va backend bilan integratsiya qilish.
 
 

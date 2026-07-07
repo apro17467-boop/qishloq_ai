@@ -16,4 +16,38 @@ class AuthService {
     }
     throw const FormatException('Kutilmagan server javobi');
   }
+
+  Future<VerifyOtpResponse> verifyOtp({
+    required String phone,
+    required String code,
+    required String role,
+    required String fullName,
+    String? regionId,
+    String? address,
+  }) async {
+    final response = await _apiClient.post(
+      '/auth/verify-otp',
+      data: {
+        'phone': phone,
+        'code': code,
+        'role': role,
+        'fullName': fullName,
+        if (regionId != null && regionId.isNotEmpty) 'regionId': regionId,
+        if (address != null && address.isNotEmpty) 'address': address,
+      },
+    );
+    if (response is Map<String, dynamic>) {
+      return VerifyOtpResponse.fromJson(response);
+    }
+    throw const FormatException('Kutilmagan server javobi');
+  }
+
+  Future<AuthUser> getMe() async {
+    final response = await _apiClient.get('/auth/me');
+    if (response is Map<String, dynamic>) {
+      final meResponse = MeResponse.fromJson(response);
+      return meResponse.user;
+    }
+    throw const FormatException('Kutilmagan server javobi');
+  }
 }

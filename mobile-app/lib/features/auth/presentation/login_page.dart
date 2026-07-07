@@ -5,6 +5,15 @@ import 'package:qishloq_ai_mobile/core/network/api_exception.dart';
 import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_button.dart';
 
+const Map<String, String> _rolesMap = {
+  'FARMER': 'Dehqon/Fermer',
+  'LIVESTOCK_OWNER': 'Chorvador',
+  'MACHINERY_OWNER': 'Texnika egasi',
+  'BUYER': 'Xaridor',
+  'AGRONOMIST': 'Agronom',
+  'VETERINARIAN': 'Veterinar',
+};
+
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -15,12 +24,16 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   late final TextEditingController _phoneController;
   final _otpController = TextEditingController();
+  final _fullNameController = TextEditingController();
+  final _addressController = TextEditingController();
 
-  bool _isLoading = false;
+  bool _isLoadingRequest = false;
+  bool _isLoadingVerify = false;
   String? _errorMessage;
   String? _successMessage;
   String? _devCode;
   bool _otpRequested = false;
+  String _selectedRole = 'FARMER';
 
   @override
   void initState() {
@@ -32,6 +45,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   void dispose() {
     _phoneController.dispose();
     _otpController.dispose();
+    _fullNameController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -51,7 +66,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
 
     setState(() {
-      _isLoading = true;
+      _isLoadingRequest = true;
     });
 
     try {
@@ -72,23 +87,107 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       });
     } finally {
       setState(() {
-        _isLoading = false;
+        _isLoadingRequest = false;
       });
     }
   }
 
-  void _verifyOtp() {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('OTP tasdiqlash 48-qadamda ulanadi.'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+  Future<void> _verifyOtp() async {
+    setState(() {
+      _errorMessage = null;
+      _successMessage = null;
+    });
+
+    final code = _otpController.text.trim();
+    final fullName = _fullNameController.text.trim();
+    final address = _addressController.text.trim();
+
+    if (code.isEmpty) {
+      setState(() {
+        _errorMessage = 'OTP kodni kiriting';
+      });
+      return;
+    }
+
+    if (fullName.isEmpty) {
+      setState(() {
+        _errorMessage = 'Ism familiyangizni kiriting';
+      });
+      return;
+    }
+
+    if (fullName.length < 3) {
+      setState(() {
+        _errorMessage = 'Ism familiya kamida 3 ta belgidan iborat bo‘lishi kerak';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoadingVerify = true;
+    });
+
+    try {
+      final phone = _phoneController.text.trim();
+      final authService = ref.read(authServiceProvider);
+      final tokenStorage = ref.read(tokenStorageProvider);
+
+      // Verify OTP against the backend
+      final verifyResponse = await authService.verifyOtp(
+        phone: phone,
+        code: code,
+        role: _selectedRole,
+        fullName: fullName,
+        address: address.isEmpty ? null : address,
+      );
+      final token = verifyResponse.accessToken;
+
+      if (token.isNotEmpty) {
+        // Save the access token
+        await tokenStorage.saveAccessToken(token);
+
+        // Fetch User profile details (GET /auth/me)
+        final user = await authService.getMe();
+
+        if (!user.isActive) {
+          await tokenStorage.clearAccessToken();
+          setState(() {
+            _errorMessage = 'Foydalanuvchi faol emas';
+          });
+          return;
+        }
+
+        setState(() {
+          _successMessage = 'Muvaffaqiyatli kirdingiz';
+        });
+
+        if (mounted) {
+          context.go('/home');
+        }
+      } else {
+        setState(() {
+          _errorMessage = 'Noto‘g‘ri token qabul qilindi';
+        });
+      }
+    } on ApiException catch (e) {
+      setState(() {
+        _errorMessage = e.message;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'OTP tasdiqlashda xatolik yuz berdi';
+      });
+    } finally {
+      setState(() {
+        _isLoadingVerify = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final showLoading = _isLoadingRequest || _isLoadingVerify;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tizimga kirish'),
@@ -201,7 +300,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 TextField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  enabled: !_otpRequested && !_isLoading,
+                  enabled: !_otpRequested && !showLoading,
                   decoration: const InputDecoration(
                     labelText: 'Telefon raqam',
                     hintText: '+998901234567',
@@ -215,14 +314,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   AppButton(
                     label: 'OTP olish',
                     fullWidth: true,
-                    loading: _isLoading,
-                    onPressed: _isLoading ? null : _getOtp,
+                    loading: _isLoadingRequest,
+                    onPressed: showLoading ? null : _getOtp,
                   ),
 
                 if (_otpRequested) ...[
                   TextField(
                     controller: _otpController,
                     keyboardType: TextInputType.number,
+                    enabled: !showLoading,
                     decoration: const InputDecoration(
                       labelText: 'Tasdiqlash kodi',
                       hintText: '111111',
@@ -231,14 +331,64 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  TextField(
+                    controller: _fullNameController,
+                    keyboardType: TextInputType.name,
+                    enabled: !showLoading,
+                    decoration: const InputDecoration(
+                      labelText: 'Ism familiyangiz',
+                      hintText: 'Ism familiyangiz',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person_outline),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    // ignore: deprecated_member_use
+                    value: _selectedRole,
+                    decoration: const InputDecoration(
+                      labelText: 'Sizning rolingiz',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.work_outline),
+                    ),
+                    items: _rolesMap.entries.map((entry) {
+                      return DropdownMenuItem<String>(
+                        value: entry.key,
+                        child: Text(entry.value),
+                      );
+                    }).toList(),
+                    onChanged: showLoading
+                        ? null
+                        : (value) {
+                            if (value != null) {
+                              setState(() {
+                                _selectedRole = value;
+                              });
+                            }
+                          },
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _addressController,
+                    keyboardType: TextInputType.streetAddress,
+                    enabled: !showLoading,
+                    decoration: const InputDecoration(
+                      labelText: 'Manzil yoki tuman (ixtiyoriy)',
+                      hintText: 'Manzil yoki tuman',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.location_on_outlined),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   AppButton(
                     label: 'Tasdiqlash',
                     fullWidth: true,
-                    onPressed: _verifyOtp,
+                    loading: _isLoadingVerify,
+                    onPressed: showLoading ? null : _verifyOtp,
                   ),
                   const SizedBox(height: 12),
                   TextButton(
-                    onPressed: _isLoading ? null : _getOtp,
+                    onPressed: showLoading ? null : _getOtp,
                     child: const Text('Kodni qayta yuborish'),
                   ),
                 ],
