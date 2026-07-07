@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:qishloq_ai_mobile/features/ai_advice/presentation/ai_advice_placeholder_page.dart';
+import 'package:qishloq_ai_mobile/features/ai_advice/presentation/ai_advice_page.dart';
 import 'package:qishloq_ai_mobile/features/auth/presentation/login_page.dart';
 import 'package:qishloq_ai_mobile/features/categories/presentation/categories_page.dart';
 import 'package:qishloq_ai_mobile/features/home/presentation/home_page.dart';
@@ -72,7 +72,7 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/ai-advice',
-      builder: (context, state) => const AiAdvicePlaceholderPage(),
+      builder: (context, state) => const AiAdvicePage(),
     ),
     GoRoute(
       path: '/profile',

@@ -5,6 +5,7 @@ import 'package:qishloq_ai_mobile/core/storage/token_storage.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_controller.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/features/auth/data/auth_service.dart';
+import 'package:qishloq_ai_mobile/features/ai_advice/data/ai_question_service.dart';
 import 'package:qishloq_ai_mobile/features/categories/data/category_service.dart';
 import 'package:qishloq_ai_mobile/features/health/data/health_service.dart';
 import 'package:qishloq_ai_mobile/features/listings/data/listing_service.dart';
@@ -51,4 +52,9 @@ final listingServiceProvider = Provider<ListingService>((ref) {
 final regionServiceProvider = Provider<RegionService>((ref) {
   final apiClient = ref.watch(apiClientProvider);
   return RegionService(apiClient);
+});
+
+final aiQuestionServiceProvider = Provider<AiQuestionService>((ref) {
+  final apiClient = ref.watch(apiClientProvider);
+  return AiQuestionService(apiClient);
 });

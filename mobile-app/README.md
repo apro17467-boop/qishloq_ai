@@ -227,6 +227,76 @@ Hozircha yozilmagan. Keyingi bosqichlarda ulanadi.
 
 ---
 
-## Keyingi qadam (Step 57)
+## Mobile AI Maslahat (Step 57)
 
-- Foydalanuvchi profilini ko'rish va tahrirlash.
+### Endpointlar
+
+- **POST /ai/questions** — yangi savol yuborish (auth token talab qilinadi)
+- **GET /ai/questions/my** — foydalanuvchining oldingi savollari (auth token talab qilinadi)
+
+### Create AI Question DTO
+
+| Field    | Turi   | Majburiy | Cheklov         |
+|----------|--------|----------|-----------------|
+| question | string | Ha       | min:10, max:3000|
+
+### My AI Questions Query
+
+| Parametr | Turi | Majburiy | Tavsif                              |
+|----------|------|----------|-------------------------------------|
+| page     | int  | Yo'q     | Sahifa raqami (default: 1)          |
+| limit    | int  | Yo'q     | Har sahifada necha ta (max: 50)     |
+| status   | enum | Yo'q     | PENDING / ANSWERED / FAILED         |
+
+### AiQuestion Model Fieldlari
+
+- `id` — UUID
+- `question` — savol matni
+- `answer` — AI javobi (null bo'lishi mumkin)
+- `status` — PENDING | ANSWERED | FAILED
+- `disclaimerShown` — ogohlantirish ko'rsatilganmi
+- `createdAt`, `updatedAt` — vaqt belgilari
+
+### AI Provider
+
+Backend hozir **local/mock AI provider** bilan ishlaydi.
+- Savol yuborilganda darhol `ANSWERED` yoki `FAILED` qaytishi mumkin.
+- Real tashqi AI provider (Gemini, OpenAI va b.) **hali ulanmagan**.
+
+### Status ko'rinishi
+
+- **PENDING** (sariq) — Kutilmoqda
+- **ANSWERED** (yashil) — Javob berilgan
+- **FAILED** (qizil) — Xatolik
+
+### Funksionallik
+
+- Savol yuborish formasi (multiline, min 10 belgi, max 3000 belgi)
+- Frontend validation (uzunlik) + backend validation (asosiy)
+- Submit loading holati
+- Success/error message
+- Savollar ro'yxati status filtri: Barchasi / Kutilmoqda / Javob berilgan / Xatolik
+- Har bir cardda: savol, AI javobi yoki kutish holati, status badge, sana
+- Katta matn uchun "To'liq ko'rish" / "Qisqartirish" expandable text
+- Pagination: "Yana yuklash" button (totalPages asosida)
+- Pull-to-refresh
+- Loading / error / empty holatlar
+- Empty state: savol yo'q va filter natijasi bo'sh uchun alohida
+
+### Route
+
+- `/ai-advice` → `AiAdvicePage` (placeholder almashtirildi)
+
+### Auth
+
+`ApiClient` Bearer token avtomatik qo'shadi. Token bo'lmasa `/login`ga yo'naltiradi.
+
+### Real AI Provider
+
+Hali ulanmagan. Backend `LocalAiProvider` (mock) ishlatmoqda.
+
+---
+
+## Keyingi qadam (Step 58)
+
+- Foydalanuvchi profilini ko'rish (Profile screen).
