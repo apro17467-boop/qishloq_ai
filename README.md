@@ -78,3 +78,13 @@ Step 76 — Real phone end-to-end pilot test
 - Hech qanday critical yoki minor bug topilmadi. Tizim to'liq barqaror ishlamoqda.
 - Test natijalari `mobile-app/docs/LOCAL_PILOT_TEST.md` ichiga batafsil yozildi.
 - Keyingi qadam (Step 77): Production deployment preparation.
+
+Step 77.1 — Missing production docs finalization
+
+- Production deployment runbook yaratildi: `docs/PRODUCTION_DEPLOYMENT_RUNBOOK.md`.
+- Security production checklist yaratildi: `docs/SECURITY_PRODUCTION_CHECKLIST.md`.
+- Android release checklist yaratildi: `mobile-app/docs/ANDROID_RELEASE_CHECKLIST.md`.
+- Admin production env example yaratildi: `admin-panel/.env.production.example`.
+- Real secret/token/password yozilmadi; faqat placeholder qiymatlar ishlatildi.
+- Backend, mobile, admin source code va database schema o'zgartirilmadi.
+- Keyingi qadam: Real SMS provider final integration.
