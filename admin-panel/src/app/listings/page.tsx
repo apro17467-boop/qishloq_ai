@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { getAccessToken } from "@/lib/auth";
-import { getAdminListings } from "@/lib/listings";
+import { getAdminListings, moderateListing } from "@/lib/listings";
 import type {
   AdminListing,
   AdminListingsQuery,
   AdminListingsResponse,
   ListingStatus,
+  ModerateListingStatus,
   ListingType
 } from "@/types/api";
 
@@ -57,6 +58,12 @@ const typeLabels: Record<ListingType, string> = {
   SERVICE: "Agro xizmatlar"
 };
 
+const finalizedStatusLabels: Record<Exclude<ListingStatus, "PENDING">, string> = {
+  ACTIVE: "Tasdiqlangan",
+  REJECTED: "Rad etilgan",
+  ARCHIVED: "Arxivda"
+};
+
 function formatTypeLabel(type: ListingType) {
   return typeLabels[type] ?? type;
 }
@@ -85,6 +92,11 @@ export default function ListingsPage() {
   const [response, setResponse] = useState<AdminListingsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [moderationError, setModerationError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [moderatingListingId, setModeratingListingId] = useState<string | null>(
+    null
+  );
 
   const listings = response?.data ?? [];
   const meta = response?.meta;
@@ -92,7 +104,7 @@ export default function ListingsPage() {
   const canGoPrevious = Boolean(meta && meta.page > 1);
   const canGoNext = Boolean(meta && meta.totalPages > 0 && meta.page < meta.totalPages);
 
-  const loadListings = useCallback(async () => {
+  const loadListings = useCallback(async (options?: { silent?: boolean }) => {
     const token = getAccessToken();
 
     if (!token) {
@@ -100,7 +112,9 @@ export default function ListingsPage() {
       return;
     }
 
-    setLoading(true);
+    if (!options?.silent) {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -109,7 +123,9 @@ export default function ListingsPage() {
     } catch {
       setError("E'lonlarni yuklashda xatolik yuz berdi");
     } finally {
-      setLoading(false);
+      if (!options?.silent) {
+        setLoading(false);
+      }
     }
   }, [query]);
 
@@ -162,6 +178,82 @@ export default function ListingsPage() {
       ...current,
       page
     }));
+  }
+
+  async function handleModerateListing(
+    listing: AdminListing,
+    status: ModerateListingStatus
+  ) {
+    const token = getAccessToken();
+
+    if (!token) {
+      setModerationError("Moderatsiya bajarilmadi: token topilmadi");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      status === "ACTIVE"
+        ? `"${listing.title}" e'lonini tasdiqlaysizmi?`
+        : `"${listing.title}" e'lonini rad etasizmi?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setModeratingListingId(listing.id);
+    setModerationError(null);
+    setSuccessMessage(null);
+
+    try {
+      await moderateListing(token, listing.id, { status });
+      setSuccessMessage(
+        status === "ACTIVE" ? "E'lon tasdiqlandi" : "E'lon rad etildi"
+      );
+      await loadListings({ silent: true });
+    } catch (caughtError) {
+      const message =
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Noma'lum xatolik yuz berdi";
+      setModerationError(`Moderatsiya bajarilmadi: ${message}`);
+    } finally {
+      setModeratingListingId(null);
+    }
+  }
+
+  function renderModerationAction(listing: AdminListing) {
+    const isModerating = moderatingListingId === listing.id;
+
+    if (listing.status !== "PENDING") {
+      return (
+        <span className="text-xs font-medium text-slate-500">
+          {finalizedStatusLabels[listing.status]}
+        </span>
+      );
+    }
+
+    return (
+      <div className="flex flex-col gap-2">
+        <Button
+          type="button"
+          className="min-h-9 px-3"
+          disabled={isModerating}
+          onClick={() => void handleModerateListing(listing, "ACTIVE")}
+        >
+          {isModerating ? "Kutilmoqda..." : "Tasdiqlash"}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          className="min-h-9 px-3"
+          disabled={isModerating}
+          onClick={() => void handleModerateListing(listing, "REJECTED")}
+        >
+          Rad etish
+        </Button>
+      </div>
+    );
   }
 
   return (
@@ -246,9 +338,29 @@ export default function ListingsPage() {
           {error ? (
             <Card className="flex flex-col gap-4 border-red-200 bg-red-50 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm font-medium text-red-700">{error}</p>
-              <Button type="button" variant="secondary" onClick={loadListings}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => void loadListings()}
+              >
                 Qayta urinish
               </Button>
+            </Card>
+          ) : null}
+
+          {moderationError ? (
+            <Card className="border-red-200 bg-red-50">
+              <p className="text-sm font-medium text-red-700">
+                {moderationError}
+              </p>
+            </Card>
+          ) : null}
+
+          {successMessage ? (
+            <Card className="border-field-100 bg-field-50">
+              <p className="text-sm font-medium text-field-700">
+                {successMessage}
+              </p>
             </Card>
           ) : null}
 
@@ -314,10 +426,7 @@ export default function ListingsPage() {
                           {formatDate(listing.createdAt)}
                         </td>
                         <td className="px-4 py-3">
-                          {/* TODO: connect detail/moderation in next step. */}
-                          <Button type="button" variant="secondary" disabled>
-                            Ko&apos;rish
-                          </Button>
+                          {renderModerationAction(listing)}
                         </td>
                       </tr>
                     ))}

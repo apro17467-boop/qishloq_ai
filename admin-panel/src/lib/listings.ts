@@ -1,9 +1,11 @@
-import { apiGet } from "@/lib/api";
+import { apiGet, apiPatch } from "@/lib/api";
 import type {
   AdminListing,
   AdminListingsQuery,
   AdminListingsResponse,
-  ListingStatus
+  ListingStatus,
+  ModerateListingRequest,
+  ModerateListingResponse
 } from "@/types/api";
 
 const ALL_STATUSES: ListingStatus[] = [
@@ -182,4 +184,16 @@ export async function getAdminListings(
 
     throw error;
   }
+}
+
+export function moderateListing(
+  token: string,
+  listingId: string,
+  body: ModerateListingRequest
+): Promise<ModerateListingResponse> {
+  return apiPatch<ModerateListingResponse, ModerateListingRequest>(
+    `/admin/listings/${listingId}/moderate`,
+    body,
+    token
+  );
 }

@@ -117,3 +117,18 @@ export type AdminListingsQuery = {
 };
 
 export type AdminListingsResponse = PaginatedResponse<AdminListing>;
+
+export type ModerateListingStatus = "ACTIVE" | "REJECTED";
+
+export type ModerateListingRequest = {
+  status: ModerateListingStatus;
+};
+
+export type ModerateListingResponse = {
+  data: {
+    id: string;
+    status: ModerateListingStatus;
+    title?: string;
+    updatedAt?: string;
+  };
+};

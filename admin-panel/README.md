@@ -92,7 +92,25 @@ Supported UI controls:
 - Search input with explicit `Qidirish` and `Tozalash` buttons
 - Pagination with `Oldingi` and `Keyingi`
 
-Moderation actions are intentionally not connected yet. The table includes a disabled `Ko'rish` placeholder for the next step.
+Moderation actions are available for `PENDING` listings.
+
+## Listings Moderation
+
+Pending listings can be moderated from `/listings` using the existing backend endpoint:
+
+- `PATCH /admin/listings/:id/moderate`
+
+Backend DTO body:
+
+```json
+{
+  "status": "ACTIVE"
+}
+```
+
+Allowed `status` values are `ACTIVE` and `REJECTED`. Only `PENDING` rows show moderation buttons. `ACTIVE`, `REJECTED`, and `ARCHIVED` rows show their finalized state instead.
+
+Next step: connect the complaints page.
 
 ## Current Scope
 

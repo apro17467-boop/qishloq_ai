@@ -3,7 +3,7 @@ import type { ApiErrorResponse } from "@/types/api";
 
 export { apiBaseUrl };
 
-type HttpMethod = "GET" | "POST";
+type HttpMethod = "GET" | "POST" | "PATCH";
 
 function normalizePath(path: string) {
   return path.startsWith("/") ? path : `/${path}`;
@@ -78,4 +78,12 @@ export async function apiPost<TResponse, TBody>(
   token?: string
 ): Promise<TResponse> {
   return request<TResponse, TBody>("POST", normalizePath(path), body, token);
+}
+
+export async function apiPatch<TResponse, TBody>(
+  path: string,
+  body: TBody,
+  token?: string
+): Promise<TResponse> {
+  return request<TResponse, TBody>("PATCH", normalizePath(path), body, token);
 }
