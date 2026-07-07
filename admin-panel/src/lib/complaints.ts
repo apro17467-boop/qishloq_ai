@@ -1,5 +1,10 @@
-import { apiGet } from "@/lib/api";
-import type { AdminComplaintsQuery, AdminComplaintsResponse } from "@/types/api";
+import { apiGet, apiPatch } from "@/lib/api";
+import type {
+  AdminComplaintsQuery,
+  AdminComplaintsResponse,
+  UpdateComplaintStatusRequest,
+  UpdateComplaintStatusResponse
+} from "@/types/api";
 
 /**
  * GET /admin/complaints
@@ -24,6 +29,21 @@ export async function getAdminComplaints(
 
   return apiGet<AdminComplaintsResponse>(
     `/admin/complaints?${params.toString()}`,
+    token
+  );
+}
+
+/**
+ * PATCH /admin/complaints/:id/status
+ */
+export async function updateComplaintStatus(
+  token: string,
+  complaintId: string,
+  body: UpdateComplaintStatusRequest
+): Promise<UpdateComplaintStatusResponse> {
+  return apiPatch<UpdateComplaintStatusResponse, UpdateComplaintStatusRequest>(
+    `/admin/complaints/${complaintId}/status`,
+    body,
     token
   );
 }

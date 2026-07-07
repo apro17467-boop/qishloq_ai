@@ -179,10 +179,13 @@ Xabar 90 belgidan uzun bo'lsa qisqartiriladi.
 
 Pastda `Oldingi` / `Keyingi` tugmalari va jami hisobi ko'rsatiladi.
 
-### Next Step (Step 39)
+### Complaint Status Update (Step 39)
 
-`PATCH /admin/complaints/:id/status` endpointini "Amal" ustuniga ulash — complaint status update action.
-
+`PATCH /admin/complaints/:id/status` endpointi ulangan.
+- `OPEN` shikoyatlarni `IN_REVIEW` yoki `REJECTED` qilish mumkin.
+- `IN_REVIEW` shikoyatlarni `RESOLVED` yoki `REJECTED` qilish mumkin.
+- `RESOLVED` / `REJECTED` holatlar yakuniy hisoblanadi.
+- Backend DTO qabul qiladigan parametr faqat `{ status }`.
 
 ## Current Scope
 

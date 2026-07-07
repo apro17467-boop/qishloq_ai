@@ -7,12 +7,13 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { getAccessToken } from "@/lib/auth";
-import { getAdminComplaints } from "@/lib/complaints";
+import { getAdminComplaints, updateComplaintStatus } from "@/lib/complaints";
 import type {
   AdminComplaint,
   AdminComplaintsQuery,
   AdminComplaintsResponse,
-  ComplaintStatus
+  ComplaintStatus,
+  UpdateComplaintStatusValue
 } from "@/types/api";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -118,6 +119,10 @@ export default function ComplaintsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [updateError, setUpdateError] = useState<string | null>(null);
+
   const complaints: AdminComplaint[] = response?.data ?? [];
   const meta = response?.meta;
 
@@ -172,14 +177,120 @@ export default function ComplaintsPage() {
     setQuery(DEFAULT_QUERY);
   }
 
+  async function handleStatusUpdate(
+    complaintId: string,
+    newStatus: UpdateComplaintStatusValue,
+    confirmMessage: string,
+    successText: string
+  ) {
+    if (!window.confirm(confirmMessage)) return;
+
+    const token = getAccessToken();
+    if (!token) return;
+
+    setUpdatingId(complaintId);
+    setUpdateError(null);
+    setSuccessMessage(null);
+
+    try {
+      await updateComplaintStatus(token, complaintId, { status: newStatus });
+      setSuccessMessage(successText);
+      await loadComplaints({ silent: true });
+    } catch (err: any) {
+      setUpdateError(
+        `Shikoyat statusini yangilashda xatolik yuz berdi. ${err?.message || ""}`
+      );
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
   // ─── Render helpers ──────────────────────────────────────────────────────────
 
-  function renderActionCell(_complaint: AdminComplaint) {
-    // TODO (Step 39): Connect complaint status update action here.
-    // PATCH /admin/complaints/:id/status
+  function renderActionCell(complaint: AdminComplaint) {
+    const isUpdating = updatingId === complaint.id;
+
+    if (complaint.status === "OPEN") {
+      return (
+        <div className="flex flex-col gap-2 min-w-[120px]">
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full text-xs"
+            disabled={isUpdating}
+            onClick={() =>
+              handleStatusUpdate(
+                complaint.id,
+                "IN_REVIEW",
+                "Shikoyatni ko'rib chiqish holatiga o'tkazasizmi?",
+                "Shikoyat ko'rib chiqishga olindi."
+              )
+            }
+          >
+            {isUpdating ? "..." : "Ko'rib chiqish"}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full text-xs text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+            disabled={isUpdating}
+            onClick={() =>
+              handleStatusUpdate(
+                complaint.id,
+                "REJECTED",
+                "Shikoyatni rad etasizmi?",
+                "Shikoyat rad etildi."
+              )
+            }
+          >
+            Rad etish
+          </Button>
+        </div>
+      );
+    }
+
+    if (complaint.status === "IN_REVIEW") {
+      return (
+        <div className="flex flex-col gap-2 min-w-[120px]">
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300"
+            disabled={isUpdating}
+            onClick={() =>
+              handleStatusUpdate(
+                complaint.id,
+                "RESOLVED",
+                "Shikoyatni hal qilingan deb belgilaysizmi?",
+                "Shikoyat hal qilingan deb belgilandi."
+              )
+            }
+          >
+            {isUpdating ? "..." : "Hal qilish"}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full text-xs text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+            disabled={isUpdating}
+            onClick={() =>
+              handleStatusUpdate(
+                complaint.id,
+                "REJECTED",
+                "Shikoyatni rad etasizmi?",
+                "Shikoyat rad etildi."
+              )
+            }
+          >
+            Rad etish
+          </Button>
+        </div>
+      );
+    }
+
     return (
       <span className="text-xs font-medium text-slate-400">
-        Ko&apos;rish
+        {complaint.status === "RESOLVED" ? "Hal qilingan" : "Rad etilgan"}
       </span>
     );
   }
@@ -205,6 +316,28 @@ export default function ComplaintsPage() {
               </p>
             </div>
           </div>
+
+          {/* ── Alerts ─────────────────────────────────────────────────────── */}
+          {successMessage && (
+            <Card className="border-emerald-200 bg-emerald-50 p-4">
+              <p className="text-sm font-medium text-emerald-700">
+                {successMessage}
+              </p>
+            </Card>
+          )}
+
+          {updateError && (
+            <Card className="flex flex-col gap-4 border-red-200 bg-red-50 sm:flex-row sm:items-center sm:justify-between p-4">
+              <p className="text-sm font-medium text-red-700">{updateError}</p>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setUpdateError(null)}
+              >
+                Yopish
+              </Button>
+            </Card>
+          )}
 
           {/* ── Filters ─────────────────────────────────────────────────────── */}
           <Card>

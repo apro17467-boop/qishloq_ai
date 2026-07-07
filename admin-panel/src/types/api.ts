@@ -194,3 +194,18 @@ export type AdminComplaintsQuery = {
 };
 
 export type AdminComplaintsResponse = PaginatedResponse<AdminComplaint>;
+
+export type UpdateComplaintStatusValue = "IN_REVIEW" | "RESOLVED" | "REJECTED";
+
+export type UpdateComplaintStatusRequest = {
+  status: UpdateComplaintStatusValue;
+};
+
+export type UpdateComplaintStatusResponse = {
+  data: {
+    id: string;
+    status: ComplaintStatus;
+    reason: ComplaintReason;
+    updatedAt: string;
+  };
+};
