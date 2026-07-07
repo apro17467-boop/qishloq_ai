@@ -1,6 +1,6 @@
 # QISHLOQ AI Admin Panel
 
-Admin panel skeleton for the QISHLOQ AI backend MVP. Login, protected dashboard access, logout, dashboard totals, listings, complaints, users, and AI questions monitoring are wired to existing backend APIs.
+Admin panel v0.1 for the QISHLOQ AI backend MVP. Login, protected dashboard access, logout, dashboard totals, listings, complaints, users, and AI questions monitoring are wired to existing backend APIs.
 
 ## Tech Stack
 
@@ -21,7 +21,17 @@ Admin panel skeleton for the QISHLOQ AI backend MVP. Login, protected dashboard 
 - AI Questions monitoring: AI savollar ro'yxati, status/search filter, pagination va detail modal mavjud.
 - Backend API base URL: `NEXT_PUBLIC_API_BASE_URL` orqali sozlanadi, default `http://localhost:3000`.
 - Local run: `npm install`, backendni ishga tushirish, keyin `npm run dev`.
-- Keyingi qadam: build/test va yakuniy smoke-testlarni tartiblash.
+- Keyingi bosqich: Flutter mobile app.
+
+## Admin Panel v0.1 Status
+
+Admin panel v0.1 lokal build/test va production start smoke-test uchun tayyor. Backend API alohida ishlaydi va admin panel `NEXT_PUBLIC_API_BASE_URL` orqali shu backendga ulanadi.
+
+Audit va release hujjatlari:
+
+- [Admin Panel Audit](docs/ADMIN_PANEL_AUDIT.md)
+- [API Integration](docs/API_INTEGRATION.md)
+- [Release Checklist](docs/RELEASE_CHECKLIST.md)
 
 ## Getting Started
 
@@ -37,6 +47,26 @@ http://localhost:3001/login
 http://localhost:3001/dashboard
 ```
 
+## Run Commands
+
+```bash
+npm run dev
+```
+
+```bash
+npm run lint
+```
+
+```bash
+npm run build
+```
+
+```bash
+npm run start
+```
+
+`dev` va `start` admin panelni `3001` portda ishga tushiradi.
+
 ## Environment Variables
 
 Create `.env.local` from `.env.example` when needed:
@@ -46,6 +76,15 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 ```
 
 The backend API must be running separately. The default API base URL points to the local backend.
+
+## Available Routes
+
+- `/login`
+- `/dashboard`
+- `/listings`
+- `/complaints`
+- `/users`
+- `/ai-questions`
 
 ## Auth Login
 
@@ -90,8 +129,6 @@ Used endpoints:
 
 The backend and admin panel must run at the same time for dashboard data to load.
 
-Next step: connect listings, complaints, and users screens to real backend APIs.
-
 ## Listings Page
 
 `/listings` shows admin listing data from the existing backend endpoint:
@@ -122,8 +159,6 @@ Backend DTO body:
 ```
 
 Allowed `status` values are `ACTIVE` and `REJECTED`. Only `PENDING` rows show moderation buttons. `ACTIVE`, `REJECTED`, and `ARCHIVED` rows show their finalized state instead.
-
-Next step: connect the complaints page.
 
 ## Complaints Page
 
@@ -234,4 +269,4 @@ Bu bosqichda AI question status update action yo'q. Backendda real AI provider h
 - Shared UI primitives (Badge, Button, Card, Input)
 - API and environment helpers
 
-Next step: polish and dashboard/admin workflow improvements.
+Next step: Flutter mobile app.
