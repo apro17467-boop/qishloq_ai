@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qishloq_ai_mobile/core/network/api_exception.dart';
 import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
 import 'package:qishloq_ai_mobile/features/listings/data/listing_models.dart';
+import 'package:qishloq_ai_mobile/shared/utils/contact_actions.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
 
 class ListingDetailPage extends ConsumerStatefulWidget {
@@ -67,14 +67,93 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
     }
   }
 
-  void _copyPhone(String phone) {
-    Clipboard.setData(ClipboardData(text: phone));
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Telefon raqami buferga nusxalandi'),
-        duration: Duration(seconds: 2),
+  void _showContactBottomSheet(BuildContext context, String phone) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0E0E0),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Text(
+                      'Bog‘lanish',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Divider(height: 1),
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.green[50],
+                  child: Icon(Icons.phone, color: Colors.green[700]),
+                ),
+                title: const Text(
+                  'Qo‘ng‘iroq qilish',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(phone),
+                onTap: () {
+                  Navigator.pop(context);
+                  ContactActions.launchPhoneCall(this.context, phone);
+                },
+              ),
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.blue[50],
+                  child: Icon(Icons.sms_outlined, color: Colors.blue[700]),
+                ),
+                title: const Text(
+                  'SMS yuborish',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(phone),
+                onTap: () {
+                  Navigator.pop(context);
+                  ContactActions.launchSms(this.context, phone);
+                },
+              ),
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.orange[50],
+                  child: Icon(Icons.copy, color: Colors.orange[700]),
+                ),
+                title: const Text(
+                  'Telefonni nusxalash',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(phone),
+                onTap: () {
+                  Navigator.pop(context);
+                  ContactActions.copyPhone(this.context, phone);
+                },
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -510,26 +589,61 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
                     ),
                   ),
                 ),
-                if (hasPhone)
-                  TextButton.icon(
-                    onPressed: () => _copyPhone(listing.contactPhone!),
-                    icon: const Icon(Icons.copy, size: 16),
-                    label: const Text(
-                      'Nusxalash',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.primary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
               ],
             ),
+            if (hasPhone) ...[
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton.icon(
+                      onPressed: () => ContactActions.launchPhoneCall(context, listing.contactPhone!),
+                      icon: const Icon(Icons.phone, size: 18),
+                      label: const Text('Qo‘ng‘iroq'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => ContactActions.launchSms(context, listing.contactPhone!),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.sms_outlined,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => ContactActions.copyPhone(context, listing.contactPhone!),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.copy,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -637,6 +751,8 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
         listing.contactPhone != null && listing.contactPhone!.trim().isNotEmpty;
     if (!hasPhone) return null;
 
+    final phone = listing.contactPhone!;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -668,24 +784,40 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  listing.contactPhone!,
+                  phone,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
           ),
+          const SizedBox(width: 8),
           ElevatedButton.icon(
-            onPressed: () => _copyPhone(listing.contactPhone!),
-            icon: const Icon(Icons.copy, size: 18),
-            label: const Text('Nusxalash'),
+            onPressed: () => ContactActions.launchPhoneCall(context, phone),
+            icon: const Icon(Icons.phone, size: 18),
+            label: const Text('Qo‘ng‘iroq'),
             style: ElevatedButton.styleFrom(
               elevation: 0,
               backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            onPressed: () => _showContactBottomSheet(context, phone),
+            icon: Icon(
+              Icons.more_horiz,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            style: IconButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+              padding: const EdgeInsets.all(12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
