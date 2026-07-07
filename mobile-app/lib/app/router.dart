@@ -9,7 +9,7 @@ import 'package:qishloq_ai_mobile/features/listings/presentation/listing_detail_
 import 'package:qishloq_ai_mobile/features/listings/presentation/listing_image_upload_page.dart';
 import 'package:qishloq_ai_mobile/features/listings/presentation/my_listings_page.dart';
 import 'package:qishloq_ai_mobile/features/onboarding/presentation/onboarding_page.dart';
-import 'package:qishloq_ai_mobile/features/profile/presentation/profile_placeholder_page.dart';
+import 'package:qishloq_ai_mobile/features/profile/presentation/profile_page.dart';
 import 'package:qishloq_ai_mobile/features/splash/presentation/splash_page.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -76,7 +76,7 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/profile',
-      builder: (context, state) => const ProfilePlaceholderPage(),
+      builder: (context, state) => const ProfilePage(),
     ),
   ],
 );

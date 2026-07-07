@@ -297,6 +297,85 @@ Hali ulanmagan. Backend `LocalAiProvider` (mock) ishlatmoqda.
 
 ---
 
-## Keyingi qadam (Step 58)
+## Mobile Profile Screen (Step 58)
 
-- Foydalanuvchi profilini ko'rish (Profile screen).
+### Endpoint
+
+- **GET /auth/me** — auth token orqali foydalanuvchi ma'lumotlarini oladi (AuthController.checkAuth() ichida).
+
+### Foydalanuvchi ma'lumotlari (GET /auth/me response)
+
+| Field       | Turi        | Tavsif                             |
+|-------------|-------------|------------------------------------|
+| id          | string      | Foydalanuvchi UUID                 |
+| phone       | string      | Telefon raqami                     |
+| role        | enum        | FARMER, LIVESTOCK_OWNER, va b.     |
+| isVerified  | bool        | Telefon tasdiqlangan               |
+| isActive    | bool        | Hisob faol                         |
+| profile     | object/null | fullName, address, regionId        |
+
+### Role labellar (o'zbekcha)
+
+| Role            | Label           |
+|-----------------|-----------------|
+| FARMER          | Dehqon/Fermer   |
+| LIVESTOCK_OWNER | Chorvador       |
+| MACHINERY_OWNER | Texnika egasi   |
+| BUYER           | Xaridor         |
+| AGRONOMIST      | Agronom         |
+| VETERINARIAN    | Veterinar       |
+| ADMIN           | Admin           |
+
+### UI tarkibi
+
+**Avatar Card:**
+- Initials (fullName "Ali Valiyev" → "AV", 1 so'z → birinchi harf, yo'q → phone oxirgi 2 raqam)
+- fullName yoki "Ism kiritilmagan"
+- Telefon raqami
+- Role badge (o'zbekcha)
+
+**Hisob holati Card:**
+- isVerified → Tasdiqlangan (yashil) / Tasdiqlanmagan (sariq)
+- isActive → Faol (yashil) / Faol emas (qizil)
+- User ID (nusxalash imkoniyati)
+
+**Profil ma'lumotlari Card:**
+- fullName, address (agar mavjud)
+- Bo'sh bo'lsa: "Profil ma'lumotlari to'liq emas" + "Profilni tahrirlash keyingi bosqichda"
+
+**Tezkor harakatlar Card:**
+- Mening e'lonlarim → `/my-listings`
+- E'lon joylash → `/create-listing`
+- AI maslahatlarim → `/ai-advice`
+- Barcha e'lonlar → `/listings`
+
+**Logout:**
+- "Hisobdan chiqish" tugmasi
+- Confirm dialog: "Hisobdan chiqmoqchimisiz?"
+- authController.logout() → `/login`
+
+### Refresh
+
+- AppBar'da refresh icon va pull-to-refresh
+- checkAuth() qayta chaqiriladi → ma'lumotlar yangilanadi
+- Invalid token → `/login`
+
+### Auth protection
+
+- Auth state kuzatiladi (ref.listen)
+- isAuthenticated false bo'lsa → `/login`
+- isLoading → loading indikator
+
+### Profile edit / Avatar upload
+
+Hozircha **yozilmagan**. Keyingi bosqichlarda `PATCH /auth/profile` va avatar upload qo'shiladi.
+
+### Route
+
+- `/profile` → `ProfilePage` (placeholder almashtirildi)
+
+---
+
+## Keyingi qadam (Step 59)
+
+- Error/loading states polishing — barcha sahifalarda yagona UX pattern.
