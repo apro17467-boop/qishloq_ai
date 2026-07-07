@@ -42,6 +42,8 @@
 - `PATCH /admin/complaints/:id/status`
 - `GET /admin/users`
 - `GET /admin/users/:id`
+- `GET /admin/ai-questions`
+- `GET /admin/ai-questions/:id`
 
 ## Auth Requirements
 
@@ -75,3 +77,5 @@ Admin-only endpoints:
 - `PATCH /admin/complaints/:id/status`
 - `GET /admin/users`
 - `GET /admin/users/:id`
+- `GET /admin/ai-questions`
+- `GET /admin/ai-questions/:id`

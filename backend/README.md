@@ -4,7 +4,7 @@ NestJS backend skeleton for the QISHLOQ AI MVP.
 
 ## Backend MVP Status
 
-Backend MVP v0.1 poydevori tayyor: health, Prisma/PostgreSQL, seed, reference API, OTP auth, JWT `/auth/me`, listings, image upload, complaints, admin moderation, admin users monitoring, AI questions, error standard, pagination, security, Swagger, tests va production Docker config mavjud.
+Backend MVP v0.1 poydevori tayyor: health, Prisma/PostgreSQL, seed, reference API, OTP auth, JWT `/auth/me`, listings, image upload, complaints, admin moderation, admin users monitoring, admin AI questions monitoring, AI questions, error standard, pagination, security, Swagger, tests va production Docker config mavjud.
 
 Yakuniy audit va release hujjatlari:
 
@@ -465,6 +465,28 @@ Admin users endpointlari uchun `Authorization: Bearer <adminAccessToken>` header
 - `search`
 
 Endpointlar read-only: user block/unblock, role update yoki delete amallari bajarilmaydi. Response foydalanuvchi profile, region va monitoring statslarini qaytaradi.
+
+## Admin AI Questions Monitoring API
+
+```bash
+GET /admin/ai-questions
+```
+
+```bash
+GET /admin/ai-questions/:id
+```
+
+Admin AI questions endpointlari uchun `Authorization: Bearer <adminAccessToken>` header kerak. Faqat `ADMIN` role ishlatishi mumkin.
+
+`GET /admin/ai-questions` query parametrlari:
+
+- `page`
+- `limit`
+- `status`
+- `userId`
+- `search`
+
+Endpointlar read-only: admin barcha foydalanuvchilarning AI savollarini monitoring qiladi. Real AI provider hali ulanmagan, local/mock provider ishlaydi.
 
 ## Auth
 

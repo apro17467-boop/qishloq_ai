@@ -4,14 +4,20 @@ const defaultPage = 1;
 const defaultLimit = 20;
 const maxLimit = 50;
 
+interface PaginationOptions {
+  maxLimit?: number;
+}
+
 export function getPaginationParams(
   page?: number,
   limit?: number,
+  options?: PaginationOptions,
 ): PaginationParams {
   const safePage = normalizePositiveInteger(page, defaultPage);
+  const safeMaxLimit = normalizePositiveInteger(options?.maxLimit, maxLimit);
   const safeLimit = Math.min(
     normalizePositiveInteger(limit, defaultLimit),
-    maxLimit,
+    safeMaxLimit,
   );
 
   return {

@@ -26,6 +26,7 @@ Audit natijasi bo'yicha backend MVP asosiy API qatlamlari tayyor. Hujjatdagi kno
 - AI questions API
 - Local AI provider
 - Admin users monitoring API
+- Admin AI questions monitoring API
 - Error response standard
 - Pagination helper
 - Security hardening: Helmet, CORS, rate limit, body limit, uploads static
@@ -46,7 +47,7 @@ Asosiy guruhlar:
 - Listings: public list/detail, create, my listings, update, archive, image upload
 - Complaints: user complaint create
 - AI: question create, my questions
-- Admin: listing moderation, complaint moderation, users monitoring
+- Admin: listing moderation, complaint moderation, users monitoring, AI questions monitoring
 
 ## Environment Variables
 

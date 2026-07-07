@@ -31,6 +31,15 @@ describe('pagination util', () => {
         take: 50,
       });
     });
+
+    it('supports an endpoint-specific max limit', () => {
+      expect(getPaginationParams(1, 100, { maxLimit: 100 })).toEqual({
+        page: 1,
+        limit: 100,
+        skip: 0,
+        take: 100,
+      });
+    });
   });
 
   describe('buildPaginationMeta', () => {
