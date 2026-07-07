@@ -88,3 +88,12 @@ Step 77.1 — Missing production docs finalization
 - Real secret/token/password yozilmadi; faqat placeholder qiymatlar ishlatildi.
 - Backend, mobile, admin source code va database schema o'zgartirilmadi.
 - Keyingi qadam: Real SMS provider final integration.
+
+Step 78 — Real SMS provider final integration
+
+- Generic HTTP SMS provider production-ready holatga keltirildi.
+- `SMS_MESSAGE_TEMPLATE` qo'shildi va `{{code}}` OTP bilan almashtiriladi.
+- Development mode (`SMS_PROVIDER=dev`) `111111` dev OTP flowini saqlaydi.
+- Generic/production mode OTP kodni API response va loglarda yashiradi.
+- Real SMS provider credentials hali gitga yozilmaydi; `.env.production` serverda yoki secret managerda saqlanishi kerak.
+- Real provider endpoint/credential kiritilgandan keyin real telefon smoke test bajariladi.

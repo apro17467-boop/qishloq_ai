@@ -546,6 +546,7 @@ SMS_API_TOKEN=
 SMS_API_LOGIN=
 SMS_API_PASSWORD=
 SMS_TIMEOUT_MS=10000
+SMS_MESSAGE_TEMPLATE=QISHLOQ AI tasdiqlash kodi: {{code}}
 ```
 
 ### Dev vs Production Behavior
@@ -555,10 +556,14 @@ SMS_TIMEOUT_MS=10000
   - The API response payload returns `devOtp` and `devCode` for testing: `{"message":"OTP code generated","expiresInMinutes":5,"devCode":"111111","devOtp":"111111"}`.
 - **Production/Real Provider Mode (`SMS_PROVIDER=generic` or `eskiz`)**:
   - Secure random 6-digit OTP codes are generated.
-  - OTP codes are sent via HTTP requests using `SMS_API_BASE_URL` with credentials.
+  - `SMS_API_BASE_URL` must be the exact provider send endpoint URL.
+  - Provider auth requires `SMS_API_TOKEN` or `SMS_API_LOGIN` + `SMS_API_PASSWORD`.
+  - OTP codes are sent via HTTP POST with a generic payload: `to`, `message`, `from`.
+  - `SMS_MESSAGE_TEMPLATE` supports `{{code}}`, for example `QISHLOQ AI tasdiqlash kodi: {{code}}`.
   - The API response payload **omits** the code completely: `{"message":"OTP code generated","expiresInMinutes":5}`.
   - OTP codes are never logged to the console/stdout to prevent credentials/security leaks.
   - Real SMS provider credentials must be configured securely on the deployment machine and should **never** be committed to git.
+  - Real provider API contracts can differ; adjust environment/provider configuration only after provider documentation and real credentials are available.
 
 ### REST Chat MVP (Step 72)
 The backend includes a REST-based message system (`ChatModule`) that manages conversation threads and text-based messages:
@@ -574,5 +579,4 @@ The backend includes a REST-based message system (`ChatModule`) that manages con
   - `GET /conversations/:id/messages` - Retrieve messages inside a thread, sorted by `createdAt` ascending. Trigger reading indicator (`readAt` updates).
   - `POST /conversations/:id/messages` - Send a text message to a conversation.
 - **Strict Validation**: Utilizes `class-validator` to enforce non-empty message bodies (up to 2000 characters) and query limits.
-
 

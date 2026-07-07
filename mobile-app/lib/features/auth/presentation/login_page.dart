@@ -60,7 +60,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       _isLoadingVerify = true;
     });
 
-    final isAuthenticated = await ref.read(authControllerProvider.notifier).checkAuth();
+    final isAuthenticated = await ref
+        .read(authControllerProvider.notifier)
+        .checkAuth();
     if (mounted) {
       setState(() {
         _isLoadingVerify = false;
@@ -150,7 +152,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     if (fullName.length < 3) {
       setState(() {
-        _errorMessage = 'Ism familiya kamida 3 ta belgidan iborat bo‘lishi kerak';
+        _errorMessage =
+            'Ism familiya kamida 3 ta belgidan iborat bo‘lishi kerak';
       });
       return;
     }
@@ -190,7 +193,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         }
 
         // Set authenticated state in AuthController
-        ref.read(authControllerProvider.notifier).setAuthenticatedFromLogin(user);
+        ref
+            .read(authControllerProvider.notifier)
+            .setAuthenticatedFromLogin(user);
 
         setState(() {
           _successMessage = 'Muvaffaqiyatli kirdingiz';
@@ -225,7 +230,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     // Listen to global AuthState changes for error messages (e.g. session expired)
     ref.listen<AuthState>(authControllerProvider, (previous, next) {
-      if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
+      if (next.errorMessage != null &&
+          next.errorMessage != previous?.errorMessage) {
         setState(() {
           _errorMessage = next.errorMessage;
         });
@@ -233,9 +239,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tizimga kirish'),
-      ),
+      appBar: AppBar(title: const Text('Tizimga kirish')),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -246,20 +250,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 const SizedBox(height: 20),
                 const Text(
                   'Mobil telefon raqamingizni kiriting',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   'Tizimdan foydalanish uchun telefon raqamingizga bir martalik kod (OTP) yuboramiz.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
                 ),
                 const SizedBox(height: 32),
 
@@ -324,7 +322,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     enabled: !showLoading,
                     decoration: const InputDecoration(
                       labelText: 'Tasdiqlash kodi',
-                      hintText: '111111',
+                      hintText: 'SMS kod',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.lock_outline),
                     ),
@@ -401,17 +399,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ScaffoldMessenger.of(context).clearSnackBars();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Demo rejim keyingi bosqichlarda qayta yoqiladi. Hozir login talab qilinadi.'),
+                        content: Text(
+                          'Demo rejim keyingi bosqichlarda qayta yoqiladi. Hozir login talab qilinadi.',
+                        ),
                         duration: Duration(seconds: 3),
                       ),
                     );
                   },
                   child: const Text(
                     'Demo davom etish',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],

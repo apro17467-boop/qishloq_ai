@@ -29,6 +29,7 @@ cp .env.production.example .env.production
 ```
 
 3. Fill `.env.production` on the server only. Use strong secret values and never commit this file.
+   For real OTP delivery set `SMS_PROVIDER=generic`, fill the provider send endpoint in `SMS_API_BASE_URL`, and configure either `SMS_API_TOKEN` or `SMS_API_LOGIN` + `SMS_API_PASSWORD`.
 
 4. Install dependencies:
 
@@ -144,6 +145,18 @@ sudo certbot renew --dry-run
 - Do not use wildcard origins for authenticated endpoints.
 - Include admin panel domain only if admin panel is deployed.
 - Re-test mobile app API calls after changing CORS.
+
+## SMS OTP Provider Checklist
+
+- Development mode uses `SMS_PROVIDER=dev` and `SMS_DEV_CODE=111111`; real SMS is not sent.
+- Production mode should use `SMS_PROVIDER=generic`.
+- `SMS_API_BASE_URL` must be the exact SMS provider send endpoint.
+- Configure `SMS_API_TOKEN` or `SMS_API_LOGIN` + `SMS_API_PASSWORD` only in server `.env.production` or secret manager.
+- Configure `SMS_FROM` with the approved sender name.
+- Configure `SMS_MESSAGE_TEMPLATE`, for example `QISHLOQ AI tasdiqlash kodi: {{code}}`.
+- Production `/auth/request-otp` response must not include `devCode`, `devOtp`, or the OTP code.
+- OTP code and provider credentials must not appear in logs.
+- Do not public launch until a real SMS request reaches a real phone number and `/auth/verify-otp` succeeds.
 
 ## Uploads / Static Files Checklist
 

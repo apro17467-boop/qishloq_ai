@@ -26,6 +26,10 @@ Use this checklist before public production launch. Do not write real secrets in
 - Disable Swagger in production or restrict it to trusted access.
 - SMS OTP must not be returned in production API response.
 - Real SMS provider credentials must be stored only in server environment variables.
+- `SMS_PROVIDER=generic` must be used for production OTP delivery.
+- `SMS_API_BASE_URL`, `SMS_API_TOKEN` or `SMS_API_LOGIN` + `SMS_API_PASSWORD`, and `SMS_FROM` must be reviewed before launch.
+- `SMS_MESSAGE_TEMPLATE` must not include secrets and should contain only the OTP `{{code}}` placeholder.
+- Public release should wait until real SMS delivery is tested on a real phone.
 - Upload file size limits must remain enabled.
 - Upload file type validation must remain enabled.
 - Admin access must remain protected by authentication and role checks.

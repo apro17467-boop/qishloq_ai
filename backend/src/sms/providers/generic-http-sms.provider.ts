@@ -1,71 +1,129 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { SmsProvider } from '../sms-provider.interface';
+
+interface GenericSmsConfig {
+  apiUrl: string;
+  token?: string;
+  login?: string;
+  password?: string;
+  from: string;
+  timeoutMs: number;
+  messageTemplate: string;
+}
 
 @Injectable()
 export class GenericHttpSmsProvider implements SmsProvider {
   private readonly logger = new Logger(GenericHttpSmsProvider.name);
 
   async sendOtp(phone: string, code: string): Promise<void> {
-    const baseUrl = process.env.SMS_API_BASE_URL;
-    const token = process.env.SMS_API_TOKEN;
-    const login = process.env.SMS_API_LOGIN;
-    const password = process.env.SMS_API_PASSWORD;
-    const from = process.env.SMS_FROM ?? 'QISHLOQAI';
-    const timeoutMs = Number(process.env.SMS_TIMEOUT_MS ?? 10000);
-
-    // Validate config before trying to send
-    if (!baseUrl) {
-      throw new InternalServerErrorException('SMS provider configuration error: SMS_API_BASE_URL is not set.');
-    }
-
-    if (!token && (!login || !password)) {
-      throw new InternalServerErrorException(
-        'SMS provider configuration error: Either SMS_API_TOKEN or both SMS_API_LOGIN and SMS_API_PASSWORD must be configured.',
-      );
-    }
-
-    this.logger.log(`[GenericHttpSmsProvider] Initiating OTP send to ${phone} using provider at ${baseUrl}`);
+    const config = this.getConfig();
+    const message = this.buildMessage(config.messageTemplate, code);
+    let timeout: NodeJS.Timeout | undefined;
 
     try {
       const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeoutMs);
+      timeout = setTimeout(() => controller.abort(), config.timeoutMs);
 
-      // Example body format for sending SMS:
       const body = {
-        mobile_phone: phone.replace('+', ''), // standard format e.g. 998901234567
-        message: `QISHLOQ AI: Tasdiqlash kodi: ${code}`,
-        from,
+        to: phone,
+        message,
+        from: config.from,
       };
 
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
 
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      if (config.token) {
+        headers.Authorization = `Bearer ${config.token}`;
       } else {
-        headers['Authorization'] = `Basic ${Buffer.from(`${login}:${password}`).toString('base64')}`;
+        headers.Authorization = `Basic ${Buffer.from(
+          `${config.login}:${config.password}`,
+        ).toString('base64')}`;
       }
 
-      const response = await fetch(`${baseUrl.replace(/\/$/, '')}/send`, {
+      const response = await fetch(config.apiUrl, {
         method: 'POST',
         headers,
         body: JSON.stringify(body),
         signal: controller.signal,
       });
 
-      clearTimeout(id);
-
       if (!response.ok) {
-        const responseText = await response.text().catch(() => '');
-        this.logger.error(`SMS send request failed with status ${response.status}: ${responseText}`);
-        throw new InternalServerErrorException(`SMS delivery failed with status ${response.status}`);
+        this.logger.error(
+          `SMS provider request failed with status ${response.status}`,
+        );
+        throw new InternalServerErrorException('SMS delivery failed');
       }
 
-      this.logger.log(`[GenericHttpSmsProvider] Successfully sent SMS to ${phone}`);
-    } catch (error: any) {
-      this.logger.error(`[GenericHttpSmsProvider] Error sending SMS: ${error.message}`);
-      throw new InternalServerErrorException(`SMS gateway communication error: ${error.message}`);
+      this.logger.log(`OTP SMS sent to ${this.maskPhone(phone)}`);
+    } catch (error) {
+      if (
+        error instanceof InternalServerErrorException &&
+        error.message === 'SMS delivery failed'
+      ) {
+        throw error;
+      }
+
+      const isAbortError =
+        error instanceof Error && error.name === 'AbortError';
+      this.logger.error(
+        isAbortError
+          ? 'SMS provider request timed out'
+          : 'SMS provider request failed',
+      );
+      throw new InternalServerErrorException('SMS delivery failed');
+    } finally {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
     }
+  }
+
+  private getConfig(): GenericSmsConfig {
+    const apiUrl = process.env.SMS_API_BASE_URL?.trim();
+    const token = process.env.SMS_API_TOKEN?.trim();
+    const login = process.env.SMS_API_LOGIN?.trim();
+    const password = process.env.SMS_API_PASSWORD?.trim();
+    const from = process.env.SMS_FROM?.trim();
+    const timeoutMs = this.getTimeoutMs();
+    const messageTemplate =
+      process.env.SMS_MESSAGE_TEMPLATE?.trim() ??
+      'QISHLOQ AI tasdiqlash kodi: {{code}}';
+
+    if (!apiUrl || !from || (!token && (!login || !password))) {
+      throw new ServiceUnavailableException('SMS provider is not configured');
+    }
+
+    return {
+      apiUrl,
+      token,
+      login,
+      password,
+      from,
+      timeoutMs,
+      messageTemplate,
+    };
+  }
+
+  private getTimeoutMs(): number {
+    const timeoutMs = Number(process.env.SMS_TIMEOUT_MS ?? 10000);
+
+    return Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 10000;
+  }
+
+  private buildMessage(template: string, code: string): string {
+    return template.includes('{{code}}')
+      ? template.replace(/{{code}}/g, code)
+      : `${template} ${code}`;
+  }
+
+  private maskPhone(phone: string): string {
+    return phone.length > 4 ? `${phone.slice(0, 4)}***${phone.slice(-2)}` : '***';
   }
 }

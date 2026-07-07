@@ -69,9 +69,13 @@
 
 ### SMS / OTP
 - [ ] `SMS_PROVIDER` set to `generic` or `eskiz` in production
-- [ ] `SMS_API_BASE_URL`, `SMS_API_TOKEN`, `SMS_API_LOGIN`, `SMS_API_PASSWORD` set via secrets manager or server env (never committed to git)
+- [ ] `SMS_API_BASE_URL` set to the exact provider send endpoint
+- [ ] `SMS_API_TOKEN` or `SMS_API_LOGIN` + `SMS_API_PASSWORD` set via secrets manager or server env (never committed to git)
+- [ ] `SMS_FROM` configured for the approved sender name
+- [ ] `SMS_MESSAGE_TEMPLATE` reviewed and contains `{{code}}`
 - [ ] Verify `devCode`/`devOtp` does NOT appear in production API response (`SMS_PROVIDER != dev`)
 - [ ] OTP code is not logged to stdout in production
+- [ ] Real SMS request tested with a real phone number before public release
 
 ### Chat
 - [ ] Chat endpoints restricted to authenticated participants only

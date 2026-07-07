@@ -70,6 +70,7 @@ Ilovada API Client infratuzilmasi, Mobil Autentifikatsiya (OTP Request & Verify)
 - **Protected Home:** `HomePage` ochilganda va u ishga tushganda `checkAuth()` orqali token tekshiriladi. Token mavjud bo'lmasa yoki yaroqsiz bo'lsa, foydalanuvchi avtomatik ravishda `/login` sahifasiga qaytariladi. Loading vaqtida "Profil tekshirilmoqda..." ko'rsatiladi.
 - **Logout (Tizimdan chiqish):** `HomePage` tepa o'ng burchagidagi chiqish tugmasi bosilganda tasdiqlash dialogi ko'rsatiladi. Tasdiqlansa, token secure storage'dan o'chiriladi va state `unauthenticated` qilinib `/login`ga yo'naltiriladi.
 - **Demo Davom Etish:** Vaqtincha demo rejim yopildi. Bosilganda ogohlantiruvchi SnackBar chiqadi: "Demo rejim keyingi bosqichlarda qayta yoqiladi. Hozir login talab qilinadi."
+- **Dev/Production OTP xabari:** Backend `SMS_PROVIDER=dev` bo'lsa `devOtp`/`devCode` qaytadi va LoginPage uni developer uchun ko'rsatadi. Production/generic SMS provider rejimida OTP response'da kod kelmaydi; LoginPage "SMS kod yuborildi. Telefoningizni tekshiring." xabarini ko'rsatadi.
 
 ### Kutubxonalar (Dependencies)
 
