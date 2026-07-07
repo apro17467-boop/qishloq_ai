@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_card.dart';
+import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
 
+// ... (qolgan o'zgarmaslar)
 const Map<String, String> _roleLabels = {
   'FARMER': 'Dehqon/Fermer',
   'LIVESTOCK_OWNER': 'Chorvador',
@@ -118,18 +120,8 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     if (authState.isLoading) {
       return const Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text(
-                'Profil tekshirilmoqda...',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-            ],
-          ),
+        body: AppLoadingState(
+          message: 'Profil tekshirilmoqda...',
         ),
       );
     }

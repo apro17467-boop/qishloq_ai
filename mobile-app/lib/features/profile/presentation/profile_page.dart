@@ -5,10 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/features/auth/data/auth_models.dart';
+import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
 
-// ---------------------------------------------------------------------------
-// Role labels
-// ---------------------------------------------------------------------------
+// ... (qolgan o'zgarmaslar)
 const Map<String, String> _roleLabels = {
   'FARMER': 'Dehqon/Fermer',
   'LIVESTOCK_OWNER': 'Chorvador',
@@ -21,9 +20,6 @@ const Map<String, String> _roleLabels = {
 
 String _getRoleLabel(String role) => _roleLabels[role] ?? role;
 
-// ---------------------------------------------------------------------------
-// ProfilePage
-// ---------------------------------------------------------------------------
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
 
@@ -96,9 +92,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Build
-  // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
@@ -113,16 +106,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     if (authState.isLoading || _isRefreshing) {
       return Scaffold(
         appBar: AppBar(title: const Text('Mening profilim')),
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Profil yuklanmoqda...',
-                  style: TextStyle(color: Colors.grey, fontSize: 15)),
-            ],
-          ),
+        body: const AppLoadingState(
+          message: 'Profil yuklanmoqda...',
         ),
       );
     }
@@ -189,37 +174,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Error banner
-  // ---------------------------------------------------------------------------
   Widget _buildErrorBanner(String message) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.red[200]!),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline, color: Colors.red, size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(message,
-                style: TextStyle(color: Colors.red[800], fontSize: 13)),
-          ),
-          TextButton(
-            onPressed: _refresh,
-            child: const Text('Qayta', style: TextStyle(fontSize: 12)),
-          ),
-        ],
-      ),
+    return AppInfoBox(
+      message: message,
+      icon: Icons.error_outline,
+      backgroundColor: Colors.red[50],
+      foregroundColor: Colors.red[800],
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Avatar + main info card
-  // ---------------------------------------------------------------------------
   Widget _buildAvatarCard(BuildContext context, AuthUser user) {
     final fullName = user.profile?.fullName;
     final initials = _getInitials(fullName, user.phone);
@@ -238,7 +201,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         padding: const EdgeInsets.all(20),
         child: Row(
           children: [
-            // Avatar circle
             CircleAvatar(
               radius: 36,
               backgroundColor: Theme.of(context).colorScheme.primary,
@@ -256,7 +218,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Full name
                   Text(
                     fullName != null && fullName.isNotEmpty
                         ? fullName
@@ -268,7 +229,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // Phone
                   Text(
                     user.phone,
                     style: TextStyle(
@@ -280,7 +240,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  // Role badge
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -309,9 +268,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Account status card
-  // ---------------------------------------------------------------------------
   Widget _buildStatusCard(BuildContext context, AuthUser user) {
     return _SectionCard(
       title: 'Hisob holati',
@@ -335,7 +291,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               : Icons.radio_button_unchecked,
         ),
         const Divider(height: 16),
-        // User ID (copyable)
         Row(
           children: [
             const Icon(Icons.fingerprint, size: 16, color: Colors.grey),
@@ -371,9 +326,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Profile data card
-  // ---------------------------------------------------------------------------
   Widget _buildProfileDataCard(BuildContext context, AuthUser user) {
     final profile = user.profile;
     final fullNameVal = profile?.fullName;
@@ -403,26 +355,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         ],
         if (!hasData) ...[
           const SizedBox(height: 4),
-          Row(
-            children: [
-              Icon(Icons.info_outline, size: 16, color: Colors.grey[500]),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text(
-                  'Profil ma\'lumotlari to\'liq emas',
-                  style: TextStyle(color: Colors.grey, fontSize: 13),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Profilni tahrirlash keyingi bosqichda qo\'shiladi.',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[500],
-              fontStyle: FontStyle.italic,
-            ),
+          const AppInfoBox(
+            message: 'Profil ma\'lumotlari to\'liq emas. Profilni tahrirlash keyingi bosqichda qo\'shiladi.',
           ),
         ],
       ],

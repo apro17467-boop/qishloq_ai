@@ -5,7 +5,9 @@ import 'package:qishloq_ai_mobile/core/network/api_exception.dart';
 import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_button.dart';
+import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
 
+// ... (qolgan o'zgarmaslar)
 const Map<String, String> _rolesMap = {
   'FARMER': 'Dehqon/Fermer',
   'LIVESTOCK_OWNER': 'Chorvador',
@@ -261,78 +263,33 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                 // Error Message Box
                 if (_errorMessage != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red[200]!),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.error_outline, color: Colors.red[700]),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            _errorMessage!,
-                            style: TextStyle(color: Colors.red[900]),
-                          ),
-                        ),
-                      ],
-                    ),
+                  AppInfoBox(
+                    message: _errorMessage!,
+                    icon: Icons.error_outline,
+                    backgroundColor: Colors.red[50],
+                    foregroundColor: Colors.red[900],
                   ),
                   const SizedBox(height: 16),
                 ],
 
                 // Success Message Box
                 if (_successMessage != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.green[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.green[200]!),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.check_circle_outline, color: Colors.green[700]),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            _successMessage!,
-                            style: TextStyle(color: Colors.green[900]),
-                          ),
-                        ),
-                      ],
-                    ),
+                  AppInfoBox(
+                    message: _successMessage!,
+                    icon: Icons.check_circle_outline,
+                    backgroundColor: Colors.green[50],
+                    foregroundColor: Colors.green[900],
                   ),
                   const SizedBox(height: 16),
                 ],
 
                 // Dev OTP Info Box
                 if (_devCode != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue[200]!),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline, color: Colors.blue[700]),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Dev OTP: $_devCode',
-                            style: TextStyle(
-                              color: Colors.blue[900],
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  AppInfoBox(
+                    message: 'Dev OTP: $_devCode',
+                    icon: Icons.info_outline,
+                    backgroundColor: Colors.blue[50],
+                    foregroundColor: Colors.blue[900],
                   ),
                   const SizedBox(height: 16),
                 ],

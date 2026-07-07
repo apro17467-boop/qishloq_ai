@@ -5,6 +5,7 @@ import 'package:qishloq_ai_mobile/core/network/api_exception.dart';
 import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
 import 'package:qishloq_ai_mobile/features/ai_advice/data/ai_question_models.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
+import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
 
 // ---------------------------------------------------------------------------
 // Status filter
@@ -22,9 +23,6 @@ class _StatusFilter {
   const _StatusFilter({required this.label, required this.value});
 }
 
-// ---------------------------------------------------------------------------
-// AiAdvicePage
-// ---------------------------------------------------------------------------
 class AiAdvicePage extends ConsumerStatefulWidget {
   const AiAdvicePage({super.key});
 
@@ -63,9 +61,6 @@ class _AiAdvicePageState extends ConsumerState<AiAdvicePage> {
     super.dispose();
   }
 
-  // ---------------------------------------------------------------------------
-  // Auth check
-  // ---------------------------------------------------------------------------
   Future<void> _checkAuthAndLoad() async {
     final authState = ref.read(authControllerProvider);
     if (!authState.isAuthenticated) {
@@ -78,9 +73,6 @@ class _AiAdvicePageState extends ConsumerState<AiAdvicePage> {
     _loadQuestions(reset: true);
   }
 
-  // ---------------------------------------------------------------------------
-  // Load questions
-  // ---------------------------------------------------------------------------
   Future<void> _loadQuestions({bool reset = false}) async {
     if (reset) {
       setState(() {
@@ -132,9 +124,6 @@ class _AiAdvicePageState extends ConsumerState<AiAdvicePage> {
     _loadQuestions(reset: true);
   }
 
-  // ---------------------------------------------------------------------------
-  // Submit question
-  // ---------------------------------------------------------------------------
   Future<void> _submitQuestion() async {
     final text = _questionController.text.trim();
 
@@ -182,9 +171,6 @@ class _AiAdvicePageState extends ConsumerState<AiAdvicePage> {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Build
-  // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
@@ -209,11 +195,8 @@ class _AiAdvicePageState extends ConsumerState<AiAdvicePage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Yuqori: savol yuborish formasi
             _buildQuestionForm(),
-            // Status filter chips
             _buildFilterChips(),
-            // Pastda: savollar ro'yxati
             Expanded(child: _buildQuestionsList()),
           ],
         ),
@@ -221,9 +204,6 @@ class _AiAdvicePageState extends ConsumerState<AiAdvicePage> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Question form
-  // ---------------------------------------------------------------------------
   Widget _buildQuestionForm() {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
@@ -237,28 +217,8 @@ class _AiAdvicePageState extends ConsumerState<AiAdvicePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // AI info banner
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.07),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.18),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline,
-                    color: Theme.of(context).colorScheme.primary, size: 18),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text(
-                    'AI maslahat tavsiya xarakteriga ega. Muhim holatlarda mutaxassis bilan maslahat qiling.',
-                    style: TextStyle(fontSize: 12, height: 1.4),
-                  ),
-                ),
-              ],
-            ),
+          const AppInfoBox(
+            message: 'AI maslahat tavsiya xarakteriga ega. Muhim holatlarda mutaxassis bilan maslahat qiling.',
           ),
           const SizedBox(height: 10),
 
@@ -281,49 +241,20 @@ class _AiAdvicePageState extends ConsumerState<AiAdvicePage> {
           // Submit error / success
           if (_submitError != null) ...[
             const SizedBox(height: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.red[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red[200]!),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.red, size: 16),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      _submitError!,
-                      style: TextStyle(color: Colors.red[800], fontSize: 13),
-                    ),
-                  ),
-                ],
-              ),
+            AppInfoBox(
+              message: _submitError!,
+              icon: Icons.error_outline,
+              backgroundColor: Colors.red[50],
+              foregroundColor: Colors.red[800],
             ),
           ],
           if (_submitSuccess != null) ...[
             const SizedBox(height: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.green[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green[200]!),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.check_circle_outline,
-                      color: Colors.green, size: 16),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      _submitSuccess!,
-                      style: TextStyle(color: Colors.green[800], fontSize: 13),
-                    ),
-                  ),
-                ],
-              ),
+            AppInfoBox(
+              message: _submitSuccess!,
+              icon: Icons.check_circle_outline,
+              backgroundColor: Colors.green[50],
+              foregroundColor: Colors.green[800],
             ),
           ],
           const SizedBox(height: 8),
@@ -349,9 +280,6 @@ class _AiAdvicePageState extends ConsumerState<AiAdvicePage> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Filter chips
-  // ---------------------------------------------------------------------------
   Widget _buildFilterChips() {
     return Container(
       height: 48,
@@ -380,25 +308,19 @@ class _AiAdvicePageState extends ConsumerState<AiAdvicePage> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Questions list body
-  // ---------------------------------------------------------------------------
   Widget _buildQuestionsList() {
     if (_isLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Yuklanmoqda...', style: TextStyle(color: Colors.grey)),
-          ],
-        ),
+      return const AppLoadingState(
+        message: 'Yuklanmoqda...',
       );
     }
 
     if (_loadError != null) {
-      return _buildListErrorState();
+      return AppErrorState(
+        title: 'AI savollarni yuklashda xatolik yuz berdi',
+        message: _loadError,
+        onRetry: () => _loadQuestions(reset: true),
+      );
     }
 
     if (_questions.isEmpty) {
@@ -420,84 +342,16 @@ class _AiAdvicePageState extends ConsumerState<AiAdvicePage> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Error state
-  // ---------------------------------------------------------------------------
-  Widget _buildListErrorState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 56, color: Colors.red),
-            const SizedBox(height: 16),
-            const Text(
-              'AI savollarni yuklashda xatolik yuz berdi',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _loadError!,
-              style: const TextStyle(color: Colors.grey, fontSize: 13),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              icon: const Icon(Icons.refresh),
-              label: const Text('Qayta urinish'),
-              onPressed: () => _loadQuestions(reset: true),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Empty state
-  // ---------------------------------------------------------------------------
   Widget _buildEmptyState() {
     final isFiltered = _selectedStatus != null;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isFiltered ? Icons.filter_list_off : Icons.psychology_alt,
-              size: 64,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              isFiltered
-                  ? 'Bu statusda savollar topilmadi'
-                  : 'Hali AI savol yubormagansiz',
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              isFiltered
-                  ? 'Boshqa filtr tanlang yoki barcha savollarni ko\'ring'
-                  : 'Yuqoridagi forma orqali birinchi savolingizni yuboring',
-              style: const TextStyle(color: Colors.grey, fontSize: 13),
-              textAlign: TextAlign.center,
-            ),
-            if (isFiltered) ...[
-              const SizedBox(height: 20),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.clear),
-                label: const Text('Filtrni tozalash'),
-                onPressed: () => _onStatusChanged(null),
-              ),
-            ],
-          ],
-        ),
-      ),
+    return AppEmptyState(
+      title: isFiltered ? 'Bu statusda savollar topilmadi' : 'Hali AI savol yubormagansiz',
+      message: isFiltered
+          ? 'Boshqa filtr tanlang yoki barcha savollarni ko\'ring'
+          : 'Yuqoridagi forma orqali birinchi savolingizni yuboring',
+      icon: isFiltered ? Icons.filter_list_off : Icons.psychology_alt,
+      onAction: isFiltered ? () => _onStatusChanged(null) : null,
+      actionLabel: isFiltered ? 'Filtrni tozalash' : null,
     );
   }
 

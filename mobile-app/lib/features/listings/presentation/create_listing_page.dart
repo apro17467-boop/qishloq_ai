@@ -9,6 +9,8 @@ import 'package:qishloq_ai_mobile/features/listings/data/listing_models.dart';
 import 'package:qishloq_ai_mobile/features/regions/data/region_models.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_button.dart';
 
+import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
+
 class CreateListingPage extends ConsumerStatefulWidget {
   const CreateListingPage({super.key});
 
@@ -86,7 +88,7 @@ class _CreateListingPageState extends ConsumerState<CreateListingPage> {
       });
     } catch (e) {
       setState(() {
-        _initErrorMessage = 'Ma’lumotlarni yuklashda xatolik yuz berdi: ${e.toString()}';
+        _initErrorMessage = e.toString();
         _isInitLoading = false;
       });
     }
@@ -190,43 +192,16 @@ class _CreateListingPageState extends ConsumerState<CreateListingPage> {
 
   Widget _buildBody() {
     if (_isInitLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text(
-              'Yuklanmoqda...',
-              style: TextStyle(color: Colors.grey, fontSize: 16),
-            ),
-          ],
-        ),
+      return const AppLoadingState(
+        message: 'Yuklanmoqda...',
       );
     }
 
     if (_initErrorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text(
-                _initErrorMessage!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, color: Colors.red),
-              ),
-              const SizedBox(height: 24),
-              AppButton(
-                label: 'Qayta urinish',
-                onPressed: _loadReferenceData,
-              ),
-            ],
-          ),
-        ),
+      return AppErrorState(
+        title: 'Ma’lumotlarni yuklashda xatolik yuz berdi',
+        message: _initErrorMessage!,
+        onRetry: _loadReferenceData,
       );
     }
 
@@ -242,43 +217,17 @@ class _CreateListingPageState extends ConsumerState<CreateListingPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Info banner about images
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, color: Theme.of(context).colorScheme.primary),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'E’lon admin tomonidan tasdiqlangandan keyin ko‘rinadi. Rasm qo‘shish keyingi bosqichda ulanadi.',
-                      style: TextStyle(fontSize: 13, height: 1.4),
-                    ),
-                  ),
-                ],
-              ),
+            const AppInfoBox(
+              message: 'E’lon admin tomonidan tasdiqlangandan keyin ko‘rinadi. Rasm qo‘shish keyingi bosqichda ulanadi.',
             ),
             const SizedBox(height: 20),
 
             if (_submitErrorMessage != null) ...[
-              Container(
-                padding: const EdgeInsets.all(12),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.red[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.red[200]!),
-                ),
-                child: Text(
-                  _submitErrorMessage!,
-                  style: TextStyle(color: Colors.red[800], fontSize: 14),
-                ),
+              AppInfoBox(
+                message: _submitErrorMessage!,
+                icon: Icons.error_outline,
+                backgroundColor: Colors.red[50],
+                foregroundColor: Colors.red[800],
               ),
               const SizedBox(height: 16),
             ],
@@ -548,62 +497,40 @@ class _CreateListingPageState extends ConsumerState<CreateListingPage> {
   }
 
   Widget _buildSuccessScreen() {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.check_circle_outline,
-              size: 80,
-              color: Colors.green,
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Muvaffaqiyatli yuborildi!',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'E’lon yuborildi. Admin tasdiqlaganidan keyin ommaga ko‘rinadi.',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            AppButton(
-              label: 'Rasm qo‘shish',
-              fullWidth: true,
-              onPressed: () => context.go('/listings/${_createdListing!.id}/images'),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: FilledButton.icon(
-                icon: const Icon(Icons.list_alt_outlined),
-                label: const Text('Mening e\'lonlarim'),
-                onPressed: () => context.go('/my-listings'),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: OutlinedButton(
-                onPressed: () => context.go('/listings'),
-                child: const Text('E’lonlar ro‘yxatiga o‘tish'),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => context.go('/home'),
-              child: const Text('Bosh sahifaga qaytish'),
-            ),
-          ],
+    return AppSuccessState(
+      title: 'Muvaffaqiyatli yuborildi!',
+      message: 'E’lon yuborildi. Admin tasdiqlaganidan keyin ommaga ko‘rinadi.',
+      actions: [
+        AppButton(
+          label: 'Rasm qo‘shish',
+          fullWidth: true,
+          onPressed: () => context.go('/listings/${_createdListing!.id}/images'),
         ),
-      ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: FilledButton.icon(
+            icon: const Icon(Icons.list_alt_outlined),
+            label: const Text('Mening e\'lonlarim'),
+            onPressed: () => context.go('/my-listings'),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: OutlinedButton(
+            onPressed: () => context.go('/listings'),
+            child: const Text('E’lonlar ro‘yxatiga o‘tish'),
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextButton(
+          onPressed: () => context.go('/home'),
+          child: const Text('Bosh sahifaga qaytish'),
+        ),
+      ],
     );
   }
 }

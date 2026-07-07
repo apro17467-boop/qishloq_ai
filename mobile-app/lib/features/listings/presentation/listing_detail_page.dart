@@ -6,7 +6,7 @@ import 'package:qishloq_ai_mobile/core/network/api_exception.dart';
 import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/features/listings/data/listing_models.dart';
-import 'package:qishloq_ai_mobile/shared/widgets/app_button.dart';
+import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
 
 class ListingDetailPage extends ConsumerStatefulWidget {
   final String listingId;
@@ -106,62 +106,21 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text(
-              'Tafsilotlar yuklanmoqda...',
-              style: TextStyle(color: Colors.grey, fontSize: 16),
-            ),
-          ],
-        ),
+      return const AppLoadingState(
+        message: 'Tafsilotlar yuklanmoqda...',
       );
     }
 
     if (_errorMessage != null) {
       final isNotFound = _statusCode == 404;
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                isNotFound ? Icons.search_off : Icons.error_outline,
-                size: 64,
-                color: Colors.red,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                isNotFound
-                    ? 'E’lon topilmadi yoki faol emas'
-                    : 'E’lon tafsilotlarini yuklashda xatolik yuz berdi:\n$_errorMessage',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, color: Colors.red),
-              ),
-              const SizedBox(height: 24),
-              if (isNotFound)
-                AppButton(
-                  label: 'E’lonlar ro‘yxatiga qaytish',
-                  onPressed: () => context.go('/listings'),
-                )
-              else ...[
-                AppButton(
-                  label: 'Qayta urinib ko‘rish',
-                  onPressed: _fetchDetail,
-                ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => context.go('/listings'),
-                  child: const Text('E’lonlar ro‘yxatiga qaytish'),
-                ),
-              ],
-            ],
-          ),
-        ),
+      return AppErrorState(
+        title: isNotFound ? 'E’lon topilmadi yoki faol emas' : 'Xatolik yuz berdi',
+        message: isNotFound ? null : _errorMessage,
+        icon: isNotFound ? Icons.search_off : Icons.error_outline,
+        retryLabel: 'Qayta urinish',
+        onRetry: isNotFound ? null : _fetchDetail,
+        backLabel: 'E’lonlar ro‘yxatiga qaytish',
+        onBack: () => context.go('/listings'),
       );
     }
 

@@ -6,6 +6,7 @@ import 'package:qishloq_ai_mobile/core/network/api_response.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/features/listings/data/listing_models.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_button.dart';
+import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
 
 class ListingsPage extends ConsumerStatefulWidget {
   final String? categoryId;
@@ -259,76 +260,26 @@ class _ListingsPageState extends ConsumerState<ListingsPage> {
 
   Widget _buildMainContent(bool hasMore) {
     if (_isLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text(
-              'E’lonlar yuklanmoqda...',
-              style: TextStyle(color: Colors.grey, fontSize: 16),
-            ),
-          ],
-        ),
+      return const AppLoadingState(
+        message: 'E‘lonlar yuklanmoqda...',
       );
     }
 
     if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Colors.red,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Xatolik yuz berdi:\n$_errorMessage',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, color: Colors.red),
-              ),
-              const SizedBox(height: 24),
-              AppButton(
-                label: 'Qayta urinib ko‘rish',
-                onPressed: () => _fetchListings(loadMore: false),
-              ),
-            ],
-          ),
-        ),
+      return AppErrorState(
+        title: 'E‘lonlarni yuklashda xatolik',
+        message: _errorMessage,
+        onRetry: () => _fetchListings(loadMore: false),
       );
     }
 
     if (_listings.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search_off_outlined,
-              size: 64,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Mos e’lonlar topilmadi',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 24),
-            AppButton(
-              label: 'Yangilash',
-              onPressed: () => _fetchListings(loadMore: false),
-            ),
-          ],
-        ),
+      return AppEmptyState(
+        title: 'Mos e‘lonlar topilmadi',
+        message: 'Hozircha bu filterga mos e‘lonlar mavjud emas',
+        icon: Icons.search_off_outlined,
+        onAction: () => _fetchListings(loadMore: false),
+        actionLabel: 'Yangilash',
       );
     }
 

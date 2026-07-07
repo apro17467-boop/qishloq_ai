@@ -8,6 +8,8 @@ import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/shared/widgets/app_button.dart';
 
+import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
+
 class ListingImageUploadPage extends ConsumerStatefulWidget {
   final String listingId;
   final String? listingTitle;
@@ -194,27 +196,8 @@ class _ListingImageUploadPageState extends ConsumerState<ListingImageUploadPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Info Banner
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Theme.of(context).colorScheme.primary),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Text(
-                        'E’lon admin tasdiqlaganidan keyin ommaga ko‘rinadi. Rasmlar e’lonni yaxshiroq ko‘rsatishga yordam beradi.',
-                        style: TextStyle(fontSize: 13, height: 1.4),
-                      ),
-                    ),
-                  ],
-                ),
+              const AppInfoBox(
+                message: 'E’lon admin tasdiqlaganidan keyin ommaga ko‘rinadi. Rasmlar e’lonni yaxshiroq ko‘rsatishga yordam beradi.',
               ),
               const SizedBox(height: 20),
 
@@ -228,52 +211,22 @@ class _ListingImageUploadPageState extends ConsumerState<ListingImageUploadPage>
 
               // Success Alert
               if (_successMessage != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green[200]!),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.check_circle_outline, color: Colors.green),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          _successMessage!,
-                          style: TextStyle(color: Colors.green[800], fontSize: 14),
-                        ),
-                      ),
-                    ],
-                  ),
+                AppInfoBox(
+                  message: _successMessage!,
+                  icon: Icons.check_circle_outline,
+                  backgroundColor: Colors.green[50],
+                  foregroundColor: Colors.green[800],
                 ),
                 const SizedBox(height: 16),
               ],
 
               // Error Alert
               if (_errorMessage != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.red[50],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.red[200]!),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.error_outline, color: Colors.red),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          _errorMessage!,
-                          style: TextStyle(color: Colors.red[800], fontSize: 14),
-                        ),
-                      ),
-                    ],
-                  ),
+                AppInfoBox(
+                  message: _errorMessage!,
+                  icon: Icons.error_outline,
+                  backgroundColor: Colors.red[50],
+                  foregroundColor: Colors.red[800],
                 ),
                 const SizedBox(height: 16),
               ],

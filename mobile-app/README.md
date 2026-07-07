@@ -376,6 +376,32 @@ Hozircha **yozilmagan**. Keyingi bosqichlarda `PATCH /auth/profile` va avatar up
 
 ---
 
-## Keyingi qadam (Step 59)
+## Mobile UI State Polishing (Step 59)
 
-- Error/loading states polishing — barcha sahifalarda yagona UX pattern.
+### Reusable UI State Widgetlari
+
+Barcha mobil ilovadagi sahifalarda yagona UX pattern ta'minlash uchun `lib/shared/widgets/app_state_widgets.dart` faylida quyidagi widgetlar yaratildi:
+
+1. **AppLoadingState**: Butun sahifa yoki ma'lum bir qism yuklanayotganda ko'rsatiladigan premium animatsiya va matn.
+2. **AppErrorState**: Xatolik yuz berganda (masalan, tarmoq xatosi yoki 404) ko'rsatiladigan chiroyli xabar va "Qayta urinish" (Retry) hamda "Ortga qaytish" (Go Back) tugmalari.
+3. **AppEmptyState**: Ro'yxatlar yoki ma'lumotlar bo'sh bo'lganda ko'rsatiladigan chiroyli ikonka va tushuntirish matni.
+4. **AppSuccessState**: Muvaffaqiyatli jarayon yakunlanganda (masalan, e'lon muvaffaqiyatli yaratilganda) ko'rsatiladigan yashil banner va action tugmasi.
+5. **AppInfoBox**: Har xil ogohlantiruvchi, xato yoki ma'lumot beruvchi bannerlar (alert, warning, info) uchun moslashuvchan widget.
+
+### Yangilangan sahifalar
+
+1. **CategoriesPage**: Kategoriya yuklanishida `AppLoadingState`, xatolikda `AppErrorState`, bo'sh bo'lsa `AppEmptyState` widgetlari integratsiya qilindi.
+2. **ListingsPage**: E'lonlar yuklanishida `AppLoadingState`, xatolikda `AppErrorState`, bo'sh bo'lsa `AppEmptyState`.
+3. **MyListingsPage**: Foydalanuvchining shaxsiy e'lonlari ro'yxatida yagona yuklanish, xato va bo'sh holatlar.
+4. **ListingDetailPage**: E'lon batafsil ma'lumotlari yuklanishida `AppLoadingState` va topilmagan yoki yuklanmagan holatda `AppErrorState`.
+5. **CreateListingPage**: Kategoriyalar va regionlar yuklanishi hamda xatoligi boshqarildi. Muvaffaqiyatli yakunlanganda `AppSuccessState` uslubida ekran chiqishi sozlindi. Formalarda `AppInfoBox` ishlatildi.
+6. **ListingImageUploadPage**: Rasm yuklashdagi muvaffaqiyat va xatolik bannerlari `AppInfoBox` yordamida standartlashtirildi.
+7. **AiAdvicePage**: AI savollar ro'yxatidagi loading, error, empty holatlar va yangi savol yuborishdagi xabarlar paneli.
+8. **ProfilePage**: Profil yuklanishi `AppLoadingState` ga o'tkazildi, xatoliklar va to'liq bo'lmagan ma'lumotlar haqidagi bannerlar `AppInfoBox` bilan almashtirildi.
+9. **LoginPage**: Xatolik, muvaffaqiyat va dasturchilar uchun dev OTP xabarlari `AppInfoBox` widgetiga o'tkazildi.
+
+---
+
+## Keyingi qadam (Step 60)
+
+- APK Build va production tayyorgarligi.

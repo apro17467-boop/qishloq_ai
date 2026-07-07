@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/features/categories/data/category_models.dart';
-import 'package:qishloq_ai_mobile/shared/widgets/app_button.dart';
+import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
 
 final categoriesFutureProvider = FutureProvider.autoDispose<List<Category>>((ref) {
   final service = ref.watch(categoryServiceProvider);
@@ -71,74 +71,24 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: categoriesAsync.when(
-            loading: () => const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text(
-                    'Kategoriyalar yuklanmoqda...',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
-                  ),
-                ],
-              ),
+            loading: () => const AppLoadingState(
+              message: 'Kategoriyalar yuklanmoqda...',
             ),
-            error: (error, stackTrace) => Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 64,
-                      color: Colors.red,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Xatolik yuz berdi: ${error.toString()}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 16, color: Colors.red),
-                    ),
-                    const SizedBox(height: 24),
-                    AppButton(
-                      label: 'Qayta urinib ko‘rish',
-                      onPressed: () => ref.refresh(categoriesFutureProvider),
-                    ),
-                  ],
-                ),
-              ),
+            error: (error, stackTrace) => AppErrorState(
+              title: 'Kategoriyalarni yuklashda xatolik',
+              message: error.toString(),
+              onRetry: () => ref.refresh(categoriesFutureProvider),
             ),
             data: (categories) {
               final activeCategories = categories.where((c) => c.isActive).toList();
 
               if (activeCategories.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.category_outlined,
-                        size: 64,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Kategoriyalar topilmadi',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      AppButton(
-                        label: 'Yangilash',
-                        onPressed: () => ref.refresh(categoriesFutureProvider),
-                      ),
-                    ],
-                  ),
+                return AppEmptyState(
+                  title: 'Kategoriyalar topilmadi',
+                  message: 'Hozircha faol kategoriyalar mavjud emas',
+                  icon: Icons.category_outlined,
+                  onAction: () => ref.refresh(categoriesFutureProvider),
+                  actionLabel: 'Yangilash',
                 );
               }
 

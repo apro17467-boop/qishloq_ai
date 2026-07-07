@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:qishloq_ai_mobile/core/providers/core_providers.dart';
 import 'package:qishloq_ai_mobile/features/auth/application/auth_state.dart';
 import 'package:qishloq_ai_mobile/features/listings/data/listing_models.dart';
+import 'package:qishloq_ai_mobile/shared/widgets/app_state_widgets.dart';
 
 // ---------------------------------------------------------------------------
 // Status filter tanlovlari
@@ -22,9 +23,6 @@ class _StatusFilter {
   const _StatusFilter({required this.label, required this.value});
 }
 
-// ---------------------------------------------------------------------------
-// MyListingsPage
-// ---------------------------------------------------------------------------
 class MyListingsPage extends ConsumerStatefulWidget {
   const MyListingsPage({super.key});
 
@@ -120,9 +118,6 @@ class _MyListingsPageState extends ConsumerState<MyListingsPage> {
     _loadListings(reset: true);
   }
 
-  // ---------------------------------------------------------------------------
-  // Build
-  // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
@@ -147,9 +142,7 @@ class _MyListingsPageState extends ConsumerState<MyListingsPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Status filter chips
             _buildFilterChips(),
-            // Body
             Expanded(child: _buildBody()),
           ],
         ),
@@ -157,9 +150,6 @@ class _MyListingsPageState extends ConsumerState<MyListingsPage> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Filter chips
-  // ---------------------------------------------------------------------------
   Widget _buildFilterChips() {
     return Container(
       height: 48,
@@ -189,25 +179,19 @@ class _MyListingsPageState extends ConsumerState<MyListingsPage> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Body
-  // ---------------------------------------------------------------------------
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Yuklanmoqda...', style: TextStyle(color: Colors.grey, fontSize: 16)),
-          ],
-        ),
+      return const AppLoadingState(
+        message: 'Yuklanmoqda...',
       );
     }
 
     if (_errorMessage != null) {
-      return _buildErrorState();
+      return AppErrorState(
+        title: 'Mening e\'lonlarimni yuklashda xatolik yuz berdi',
+        message: _errorMessage,
+        onRetry: () => _loadListings(reset: true),
+      );
     }
 
     if (_listings.isEmpty) {
@@ -217,89 +201,16 @@ class _MyListingsPageState extends ConsumerState<MyListingsPage> {
     return _buildListingsView();
   }
 
-  // ---------------------------------------------------------------------------
-  // Error state
-  // ---------------------------------------------------------------------------
-  Widget _buildErrorState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            const Text(
-              'Mening e\'lonlarimni yuklashda xatolik yuz berdi',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _errorMessage!,
-              style: const TextStyle(color: Colors.grey, fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              icon: const Icon(Icons.refresh),
-              label: const Text('Qayta urinish'),
-              onPressed: () => _loadListings(reset: true),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Empty state
-  // ---------------------------------------------------------------------------
   Widget _buildEmptyState() {
     final isFiltered = _selectedStatus != null;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isFiltered ? Icons.filter_list_off : Icons.inventory_2_outlined,
-              size: 72,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 20),
-            Text(
-              isFiltered
-                  ? 'Bu statusda e\'lonlar topilmadi'
-                  : 'Sizda hali e\'lon yo\'q',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              isFiltered
-                  ? 'Boshqa filtr tanlang yoki barcha e\'lonlarni ko\'ring'
-                  : 'Birinchi e\'loningizni joylashtiring!',
-              style: const TextStyle(color: Colors.grey, fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            if (isFiltered)
-              OutlinedButton.icon(
-                icon: const Icon(Icons.clear),
-                label: const Text('Filtrni tozalash'),
-                onPressed: () => _onStatusChanged(null),
-              )
-            else
-              FilledButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('Birinchi e\'loningizni joylashtiring'),
-                onPressed: () => context.go('/create-listing'),
-              ),
-          ],
-        ),
-      ),
+    return AppEmptyState(
+      title: isFiltered ? 'Bu statusda e\'lonlar topilmadi' : 'Sizda hali e\'lon yo\'q',
+      message: isFiltered
+          ? 'Boshqa filtr tanlang yoki barcha e\'lonlarni ko\'ring'
+          : 'Birinchi e\'loningizni joylashtiring!',
+      icon: isFiltered ? Icons.filter_list_off : Icons.inventory_2_outlined,
+      onAction: isFiltered ? () => _onStatusChanged(null) : () => context.go('/create-listing'),
+      actionLabel: isFiltered ? 'Filtrni tozalash' : 'E\'lon joylash',
     );
   }
 
