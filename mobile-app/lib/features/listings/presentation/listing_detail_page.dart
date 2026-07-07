@@ -789,12 +789,12 @@ class _ListingDetailPageState extends ConsumerState<ListingDetailPage> {
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
-                            strokeWidth: 2,
+                            strokeWidth: 2.0,
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : const Icon(Icons.chat_bubble_outline, size: 18),
-                  label: const Text('Xabar yozish'),
+                  label: Text(_isCreatingConversation ? 'Bog‘lanmoqda...' : 'Xabar yozish'),
                   style: ElevatedButton.styleFrom(
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 12),

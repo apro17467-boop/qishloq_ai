@@ -46,3 +46,14 @@ Step 73 — Mobile Chat UI Foundation
 - REST-only ishlaydi, WebSocket qo‘shilmadi.
 - Backend/admin/database o‘zgarmadi.
 - Keyingi qadam: Chat polish.
+
+Step 74 — Chat polish
+
+- ChatListPage polished: "Xabarlaringiz" header card, dynamic other participant parsing, unreadCount green badge with "99+" cap, and pull-to-refresh / reload.
+- ChatPage polished: Dynamic AppBar title and listing subtitle, compact mini listing card with quick access, scroll-to-bottom automatic adjustments, pull-to-refresh / reload.
+- Custom message bubble styling: rounded corners based on sender, primary/yashil for me and grey/light-grey for partner, time label display, and inline loading indicator for outgoing messages.
+- Input Area polished: Safe Area friendly layout, maxLines up to 4, send button disabled when input is empty, and clear field on successful send.
+- Optimistic update: Immediate local message rendering upon send, with failure fallback and input restoration.
+- REST-only, no WebSocket or real-time overhead.
+- Backend, admin panel, and database remain unchanged.
+- Keyingi qadam (Step 75): Real SMS provider final yoki production hardening.

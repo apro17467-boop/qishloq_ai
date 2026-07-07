@@ -132,6 +132,12 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             }
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _isLoading ? null : _fetchConversations,
+          ),
+        ],
       ),
       body: SafeArea(
         child: _buildBody(),
@@ -153,12 +159,21 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     }
 
     if (_conversations.isEmpty) {
-      return AppEmptyState(
-        title: 'Xabarlar yo‘q',
-        message: 'E’lon egalariga yozgan xabarlaringiz shu yerda ko‘rinadi.',
-        icon: Icons.chat_bubble_outline_rounded,
-        actionLabel: 'E’lonlarni ko‘rish',
-        onAction: () => context.go('/listings'),
+      return RefreshIndicator(
+        onRefresh: _fetchConversations,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: AppEmptyState(
+              title: 'Xabarlar yo‘q',
+              message: 'E’lon egalariga yozgan xabarlaringiz shu yerda ko‘rinadi.',
+              icon: Icons.chat_bubble_outline_rounded,
+              actionLabel: 'E’lonlarni ko‘rish',
+              onAction: () => context.go('/listings'),
+            ),
+          ),
+        ),
       );
     }
 
@@ -167,10 +182,16 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     return RefreshIndicator(
       onRefresh: _fetchConversations,
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        itemCount: _conversations.length + (hasMore ? 1 : 0),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+        itemCount: _conversations.length + 1 + (hasMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index == _conversations.length) {
+          if (index == 0) {
+            return _buildHeaderCard();
+          }
+
+          final convIndex = index - 1;
+
+          if (convIndex == _conversations.length) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: AppButton(
@@ -182,7 +203,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             );
           }
 
-          final conv = _conversations[index];
+          final conv = _conversations[convIndex];
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: _buildConversationCard(conv),
@@ -192,12 +213,63 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     );
   }
 
+  Widget _buildHeaderCard() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.chat_bubble_outline_rounded,
+                color: Theme.of(context).colorScheme.primary,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Xabarlaringiz',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'E’lon egalari va xaridorlar bilan yozishmalaringiz shu yerda ko‘rinadi.',
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey[700],
+              height: 1.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildConversationCard(ConversationSummary conv) {
-    final otherUser = conv.otherParticipant;
-    final partnerName = otherUser?.fullName ?? 'Foydalanuvchi';
-    final partnerRole = otherUser?.roleLabel ?? '';
+    final currentUserId = ref.read(authControllerProvider).user?.id;
+    final otherUser = conv.otherParticipant ??
+        (currentUserId == conv.buyer.id ? conv.seller : conv.buyer);
+    final partnerName = otherUser.fullName.isNotEmpty ? otherUser.fullName : 'Foydalanuvchi';
+    final partnerRole = otherUser.roleLabel;
+
     final lastMsg = conv.lastMessage;
-    final lastMsgText = lastMsg != null ? lastMsg.body : 'Xabarlar yo‘q';
+    final hasLastMsg = lastMsg != null && lastMsg.body.trim().isNotEmpty;
+    final lastMsgText = hasLastMsg ? lastMsg.body : 'Hali xabar yozilmagan';
     final isUnread = conv.unreadCount > 0;
 
     return Card(
@@ -215,7 +287,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () async {
-          // Push to chat screen and refresh on return
           await context.push('/chat/${conv.id}');
           _fetchConversations();
         },
@@ -224,12 +295,12 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Partner Header Row
+              // Header Row
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CircleAvatar(
-                    radius: 20,
+                    radius: 22,
                     backgroundColor: Theme.of(context)
                         .colorScheme
                         .primary
@@ -239,6 +310,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
                   ),
@@ -260,7 +332,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (otherUser?.isVerified == true) ...[
+                            if (otherUser.isVerified) ...[
                               const SizedBox(width: 4),
                               const Icon(
                                 Icons.verified,
@@ -294,7 +366,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                 ],
               ),
               const Divider(height: 24),
-              // Listing Info Row
+              // Listing Row
               Row(
                 children: [
                   Container(
@@ -330,6 +402,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 4),
                   Text(
                     conv.listing.formattedPrice,
                     style: TextStyle(
@@ -341,7 +414,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                 ],
               ),
               const SizedBox(height: 12),
-              // Message Body + Badge Row
+              // Message Body + Badge
               Row(
                 children: [
                   Expanded(
@@ -350,7 +423,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
-                        color: isUnread ? Colors.black87 : Colors.grey[600],
+                        color: isUnread
+                            ? Colors.black87
+                            : (hasLastMsg ? Colors.grey[600] : Colors.grey[400]),
+                        fontStyle: hasLastMsg ? FontStyle.normal : FontStyle.italic,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -359,13 +435,17 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                   if (isUnread) ...[
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        shape: BoxShape.circle,
+                        color: Colors.green[600],
+                        borderRadius: BorderRadius.circular(10),
                       ),
+                      constraints: const BoxConstraints(
+                        minWidth: 20,
+                      ),
+                      alignment: Alignment.center,
                       child: Text(
-                        '${conv.unreadCount}',
+                        conv.unreadCount > 99 ? '99+' : '${conv.unreadCount}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,

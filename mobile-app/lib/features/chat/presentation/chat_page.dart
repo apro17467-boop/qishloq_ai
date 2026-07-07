@@ -21,6 +21,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   bool _isLoading = false;
   bool _isLoadingOlder = false;
   bool _isSending = false;
+  bool _isInputEmpty = true;
   String? _errorMessage;
   int _firstLoadedPage = 1;
   final TextEditingController _messageController = TextEditingController();
@@ -29,6 +30,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   @override
   void initState() {
     super.initState();
+    _messageController.addListener(_onMessageTextChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAuthAndLoad();
     });
@@ -36,9 +38,19 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   @override
   void dispose() {
+    _messageController.removeListener(_onMessageTextChanged);
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onMessageTextChanged() {
+    final isEmpty = _messageController.text.trim().isEmpty;
+    if (isEmpty != _isInputEmpty) {
+      setState(() {
+        _isInputEmpty = isEmpty;
+      });
+    }
   }
 
   Future<void> _checkAuthAndLoad() async {
@@ -186,9 +198,22 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       return;
     }
 
+    final currentUserId = ref.read(authControllerProvider).user?.id ?? '';
+    final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    final tempMessage = ChatMessage(
+      id: tempId,
+      conversationId: widget.conversationId,
+      senderId: currentUserId,
+      body: body,
+      createdAt: DateTime.now().toUtc().toIso8601String(),
+    );
+
     setState(() {
+      _messages.add(tempMessage);
+      _messageController.clear();
       _isSending = true;
     });
+    _scrollToBottom();
 
     try {
       final chatService = ref.read(chatServiceProvider);
@@ -199,14 +224,20 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
       if (!mounted) return;
       setState(() {
-        _messages.add(message);
-        _messageController.clear();
+        final index = _messages.indexWhere((m) => m.id == tempId);
+        if (index != -1) {
+          _messages[index] = message;
+        }
         _isSending = false;
       });
       _scrollToBottom();
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
+        _messages.removeWhere((m) => m.id == tempId);
+        if (_messageController.text.isEmpty) {
+          _messageController.text = body;
+        }
         _isSending = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -215,6 +246,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
+        _messages.removeWhere((m) => m.id == tempId);
+        if (_messageController.text.isEmpty) {
+          _messageController.text = body;
+        }
         _isSending = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -240,12 +275,40 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    final otherUser = _conversation?.otherParticipant;
-    final titleText = otherUser?.fullName ?? 'Chat';
+    final currentUserId = ref.read(authControllerProvider).user?.id ?? '';
+    final otherUser = _conversation != null
+        ? (_conversation!.otherParticipant ??
+            (currentUserId == _conversation!.buyer.id
+                ? _conversation!.seller
+                : _conversation!.buyer))
+        : null;
+    final titleText = otherUser?.fullName ?? 'Suhbatdosh';
+    final subtitleText = _conversation != null && _conversation!.listing.title.isNotEmpty
+        ? _conversation!.listing.title
+        : 'Chat';
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(titleText),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              titleText,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitleText,
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -274,6 +337,60 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
     final currentUserId = ref.read(authControllerProvider).user?.id ?? '';
     final showOlderButton = _firstLoadedPage > 1;
+
+    if (_messages.isEmpty) {
+      return Column(
+        children: [
+          if (_conversation != null && _conversation!.listing.id.isNotEmpty)
+            _buildMiniListingCard(_conversation!.listing),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _loadChat,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.chat_bubble_outline_rounded,
+                            size: 48,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Hali xabar yo‘q',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Suhbatni boshlash uchun birinchi xabarni yuboring.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          _buildInputArea(),
+        ],
+      );
+    }
 
     return Column(
       children: [
@@ -326,9 +443,16 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   Widget _buildMiniListingCard(ChatListingSummary listing) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
         border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
       ),
       child: Row(
@@ -336,11 +460,12 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
@@ -348,7 +473,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                       child: Text(
                         listing.typeLabel,
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 9,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.primary,
                         ),
@@ -381,12 +506,15 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             ),
           ),
           const SizedBox(width: 12),
-          OutlinedButton(
+          ElevatedButton(
             onPressed: () {
               context.push('/listings/${listing.id}');
             },
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+              foregroundColor: Theme.of(context).colorScheme.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               shape: RoundedRectangleBorder(
@@ -395,7 +523,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             ),
             child: const Text(
               'Ko‘rish',
-              style: TextStyle(fontSize: 12),
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -406,6 +534,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   Widget _buildMessageBubble(ChatMessage msg, String currentUserId) {
     final isMe = msg.senderId == currentUserId;
     final timeStr = msg.formattedTime;
+    final isTemp = msg.id.startsWith('temp_');
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -422,9 +551,16 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isMe ? 16 : 0),
-            bottomRight: Radius.circular(isMe ? 0 : 16),
+            bottomLeft: Radius.circular(isMe ? 16 : 4),
+            bottomRight: Radius.circular(isMe ? 4 : 16),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -434,17 +570,33 @@ class _ChatPageState extends ConsumerState<ChatPage> {
               msg.body,
               style: TextStyle(
                 color: isMe ? Colors.white : Colors.black87,
-                fontSize: 14,
+                fontSize: 14.5,
                 height: 1.4,
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              timeStr,
-              style: TextStyle(
-                color: isMe ? Colors.white70 : Colors.grey[500],
-                fontSize: 10,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isTemp) ...[
+                  const SizedBox(
+                    width: 10,
+                    height: 10,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 1.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                ],
+                Text(
+                  timeStr,
+                  style: TextStyle(
+                    color: isMe ? Colors.white70 : Colors.grey[500],
+                    fontSize: 9.5,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -460,36 +612,51 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         border: Border(top: BorderSide(color: Colors.grey[200]!)),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
-            child: TextField(
-              controller: _messageController,
-              textCapitalization: TextCapitalization.sentences,
-              maxLength: 2000,
-              maxLines: null,
-              decoration: const InputDecoration(
-                hintText: 'Xabar yozing...',
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-                counterText: '', // Hide the maxLength counter UI to keep it clean
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8F9FA),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFE9ECEF)),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: TextField(
+                controller: _messageController,
+                textCapitalization: TextCapitalization.sentences,
+                maxLength: 2000,
+                maxLines: 4,
+                minLines: 1,
+                decoration: const InputDecoration(
+                  hintText: 'Xabar yozing...',
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 10),
+                  counterText: '',
+                ),
               ),
             ),
           ),
           const SizedBox(width: 8),
-          IconButton(
-            icon: _isSending
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Icon(
-                    Icons.send,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-            onPressed: _isSending ? null : _sendMessage,
+          Container(
+            margin: const EdgeInsets.only(bottom: 2),
+            child: IconButton(
+              icon: _isSending && _messageController.text.trim().isEmpty
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(
+                      Icons.send_rounded,
+                      color: _isInputEmpty
+                          ? Colors.grey[400]
+                          : Theme.of(context).colorScheme.primary,
+                    ),
+              onPressed: (_isSending || _isInputEmpty) ? null : _sendMessage,
+            ),
           ),
         ],
       ),
