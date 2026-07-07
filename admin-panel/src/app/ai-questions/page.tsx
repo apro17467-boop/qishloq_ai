@@ -17,7 +17,8 @@ import type {
   AdminAiQuestionDetailResponse,
   AdminAiQuestionsQuery,
   AdminAiQuestionsResponse,
-  AiQuestionStatus
+  AiQuestionStatus,
+  UserRole
 } from "@/types/api";
 
 const DEFAULT_QUERY: AdminAiQuestionsQuery = {
@@ -46,8 +47,22 @@ const statusClassNames: Record<AiQuestionStatus, string> = {
   FAILED: "bg-red-50 text-red-700 ring-red-100"
 };
 
+const roleLabels: Record<UserRole, string> = {
+  FARMER: "Dehqon/Fermer",
+  LIVESTOCK_OWNER: "Chorvador",
+  MACHINERY_OWNER: "Texnika egasi",
+  BUYER: "Xaridor",
+  AGRONOMIST: "Agronom",
+  VETERINARIAN: "Veterinar",
+  ADMIN: "Admin"
+};
+
 function formatStatusLabel(status: AiQuestionStatus) {
   return statusLabels[status] ?? status;
+}
+
+function formatRoleLabel(role?: UserRole | null) {
+  return role ? roleLabels[role] ?? role : "Ma'lumot yo'q";
 }
 
 function formatDisclaimer(disclaimerShown: boolean) {
@@ -222,7 +237,9 @@ export default function AiQuestionsPage() {
         <p className="font-medium text-slate-900">{getUserName(question)}</p>
         <p className="text-xs text-slate-500">{getUserPhone(question)}</p>
         {question.user?.role ? (
-          <p className="mt-1 text-xs text-slate-400">{question.user.role}</p>
+          <p className="mt-1 text-xs text-slate-400">
+            {formatRoleLabel(question.user.role)}
+          </p>
         ) : null}
       </div>
     );
@@ -235,7 +252,7 @@ export default function AiQuestionsPage() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-medium text-field-700">
-                Admin AI monitoring
+                AI savollar monitoringi
               </p>
               <h1 className="mt-1 text-2xl font-semibold tracking-normal text-slate-950">
                 AI savollar
@@ -526,9 +543,9 @@ export default function AiQuestionsPage() {
                         </p>
                         <p>
                           <span className="block text-xs text-slate-500">
-                            Role
+                            Rol
                           </span>
-                          {detailQuestion.user?.role || "Ma'lumot yo'q"}
+                          {formatRoleLabel(detailQuestion.user?.role)}
                         </p>
                         <p>
                           <span className="block text-xs text-slate-500">

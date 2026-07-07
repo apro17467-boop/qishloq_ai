@@ -20,22 +20,22 @@ export default function DashboardPage() {
       {
         label: "Foydalanuvchilar",
         value: stats?.usersTotal,
-        status: "Users"
+        status: "Jami"
       },
       {
         label: "Moderatsiya kutilmoqda",
         value: stats?.pendingListings,
-        status: "Review"
+        status: "Ko'rib chiqish"
       },
       {
         label: "Faol e'lonlar",
         value: stats?.activeListings,
-        status: "Active"
+        status: "Faol"
       },
       {
         label: "Ochiq shikoyatlar",
         value: stats?.openComplaints,
-        status: "Open"
+        status: "Ochiq"
       }
     ],
     [stats]
@@ -72,7 +72,9 @@ export default function DashboardPage() {
         <div className="space-y-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-field-700">Overview</p>
+              <p className="text-sm font-medium text-field-700">
+                Umumiy ko&apos;rinish
+              </p>
               <h1 className="mt-1 text-2xl font-semibold tracking-normal text-slate-950">
                 Dashboard
               </h1>

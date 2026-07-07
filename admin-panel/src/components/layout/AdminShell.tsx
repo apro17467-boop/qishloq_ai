@@ -1,5 +1,5 @@
 import { Header } from "@/components/layout/Header";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { MobileNavigation, Sidebar } from "@/components/layout/Sidebar";
 
 type AdminShellProps = {
   children: React.ReactNode;
@@ -12,6 +12,7 @@ export function AdminShell({ children }: AdminShellProps) {
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <Header />
+          <MobileNavigation />
           <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
         </div>
       </div>

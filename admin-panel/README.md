@@ -10,6 +10,19 @@ Admin panel skeleton for the QISHLOQ AI backend MVP. Login, protected dashboard 
 - ESLint
 - App Router
 
+## Admin Panel Hozirgi Holati
+
+- Login: backend OTP auth oqimiga ulangan.
+- Protected routes: dashboard, listings, complaints, users va AI questions sahifalari admin token talab qiladi.
+- Dashboard: mavjud backend endpointlardan `meta.total` orqali asosiy hisoblarni ko'rsatadi.
+- Listings + moderation: e'lonlar ro'yxati, filterlar, pagination va moderatsiya actionlari mavjud.
+- Complaints + status update: shikoyatlar ro'yxati, status filter va status update mavjud.
+- Users monitoring: foydalanuvchilar ro'yxati, filterlar, qidiruv, pagination va detail modal mavjud.
+- AI Questions monitoring: AI savollar ro'yxati, status/search filter, pagination va detail modal mavjud.
+- Backend API base URL: `NEXT_PUBLIC_API_BASE_URL` orqali sozlanadi, default `http://localhost:3000`.
+- Local run: `npm install`, backendni ishga tushirish, keyin `npm run dev`.
+- Keyingi qadam: build/test va yakuniy smoke-testlarni tartiblash.
+
 ## Getting Started
 
 ```bash

@@ -262,7 +262,9 @@ export default function ListingsPage() {
         <div className="space-y-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-field-700">Admin listings</p>
+              <p className="text-sm font-medium text-field-700">
+                E&apos;lonlar boshqaruvi
+              </p>
               <h1 className="mt-1 text-2xl font-semibold tracking-normal text-slate-950">
                 E&apos;lonlar
               </h1>

@@ -209,7 +209,9 @@ export default function UsersPage() {
           {/* ── Header ──────────────────────────────────────────────────────── */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-field-700">Admin Panel</p>
+              <p className="text-sm font-medium text-field-700">
+                Foydalanuvchilar monitoringi
+              </p>
               <h1 className="mt-1 text-2xl font-semibold tracking-normal text-slate-950">
                 Foydalanuvchilar
               </h1>
@@ -387,9 +389,9 @@ export default function UsersPage() {
                     <tr>
                       <th className="px-4 py-3">Telefon</th>
                       <th className="px-4 py-3">Ism</th>
-                      <th className="px-4 py-3">Role</th>
-                      <th className="px-4 py-3">Verified</th>
-                      <th className="px-4 py-3">Active</th>
+                      <th className="px-4 py-3">Rol</th>
+                      <th className="px-4 py-3">Tasdiq</th>
+                      <th className="px-4 py-3">Holat</th>
                       <th className="px-4 py-3">Manzil</th>
                       <th className="px-4 py-3">Ro&apos;yxatdan o&apos;tgan sana</th>
                       <th className="px-4 py-3">Amal</th>
@@ -555,7 +557,7 @@ export default function UsersPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-400 font-medium">Holati (Active)</p>
+                        <p className="text-xs text-slate-400 font-medium">Holati</p>
                         <div className="mt-1">
                           <Badge className={statusBadgeClass(detailUser.isActive)}>
                             {detailUser.isActive ? "Faol" : "Nofaol"}
@@ -615,7 +617,7 @@ export default function UsersPage() {
                           <p className="text-2xl font-bold text-slate-950">
                             {detailUser.stats.aiQuestionsCount}
                           </p>
-                          <p className="text-xs text-slate-400 mt-1">AI Savollar</p>
+                          <p className="text-xs text-slate-400 mt-1">AI savollar</p>
                         </div>
                       </div>
                     </div>
