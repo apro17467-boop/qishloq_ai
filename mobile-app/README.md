@@ -402,6 +402,54 @@ Barcha mobil ilovadagi sahifalarda yagona UX pattern ta'minlash uchun `lib/share
 
 ---
 
-## Keyingi qadam (Step 60)
+## APK Build Preparation (Step 60)
 
-- APK Build va production tayyorgarligi.
+### Muhitni sozlash va Android SDK konfiguratsiyasi
+
+Mobil ilovani APK ko'rinishida build qilish uchun Android qurish muhiti noldan muvaffaqiyatli sozlandi va konfiguratsiya qilindi:
+
+1. **JDK o'rnatish:**
+   - Eclipse Temurin OpenJDK 17 yuklab olindi va extract qilindi.
+   - Joylashuvi: `/home/xbmb/development/jdk-17`
+
+2. **Android SDK Command-Line Tools:**
+   - Android SDK Command-line tools yuklab olindi.
+   - Joylashuvi: `/home/xbmb/development/android-sdk/cmdline-tools/latest`
+
+3. **Tizim o'zgaruvchilari (Environment Variables):**
+   - Hozirgi terminal va doimiy ravishda `~/.bashrc` fayliga quyidagi o'zgaruvchilar qo'shildi:
+     ```bash
+     export JAVA_HOME="$HOME/development/jdk-17"
+     export ANDROID_HOME="$HOME/development/android-sdk"
+     export ANDROID_SDK_ROOT="$ANDROID_HOME"
+     export PATH="$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$HOME/development/flutter/bin:$PATH"
+     ```
+
+4. **Android SDK komponentlari:**
+   - `sdkmanager` orqali quyidagi Android komponentlari yuklab olindi va o'rnatildi:
+     - `platform-tools`
+     - `build-tools;34.0.0` va `build-tools;36.0.0`
+     - `platforms;android-34` va `platforms;android-35` hamda `platforms;android-36`
+     - `ndk;28.2.13676358` (Native build pluginlar uchun)
+     - `cmake;3.22.1`
+
+5. **Flutter va Android Toolchain:**
+   - Flutter config ga Android SDK yo'li bog'landi:
+     `flutter config --android-sdk /home/xbmb/development/android-sdk`
+   - Barcha Android SDK litsenziyalari qabul qilindi:
+     `flutter doctor --android-licenses`
+   - `flutter doctor -v` tekshirilganda **Android toolchain** to'liq yashil (muvaffaqiyatli) holatga keldi.
+
+6. **APK Build:**
+   - Quyidagi buyruq orqali Debug APK muvaffaqiyatli build qilindi:
+     ```bash
+     flutter build apk --debug
+     ```
+   - **Chiqish yo'li (APK Output Path):** [app-debug.apk](file:///home/xbmb/qishloq_loihasi/birinchi_urunish/qishloq-ai/mobile-app/build/app/outputs/flutter-apk/app-debug.apk)
+   - **Hajmi:** 151 Megabayt (debug build uchun normal holat).
+
+> [!NOTE]
+> Release imzolash (release signing) ishlari hali amalga oshirilmadi. Hozirgi bosqichda faqat debug APK build muhiti to'liq tayyorlandi.
+
+### Keyingi qadam (Step 61)
+- Loyihani real sharoitda sinab ko'rish uchun **Local pilot test** va test-run jarayoni.
