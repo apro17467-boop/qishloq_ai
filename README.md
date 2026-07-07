@@ -57,3 +57,16 @@ Step 74 — Chat polish
 - REST-only, no WebSocket or real-time overhead.
 - Backend, admin panel, and database remain unchanged.
 - Keyingi qadam (Step 75): Real SMS provider final yoki production hardening.
+
+Step 75 — MVP Release Readiness Audit
+
+- Backend audit: prisma validate ✅, migrate status ✅ (4 migrations), build ✅, 37/37 tests ✅
+- Mobile audit: flutter analyze ✅ (no issues), flutter test ✅ (2/2), APK build ✅
+- Admin audit: npm run build ✅ (8 routes, 0 errors)
+- Audit document yaratildi: docs/MVP_RELEASE_READINESS_AUDIT.md
+- Mobile pilot test guide yaratildi: mobile-app/docs/LOCAL_PILOT_TEST.md
+- Backend release checklist yangilandi: backend/docs/RELEASE_CHECKLIST.md
+- Known limitations aniqlandi: real SMS, real AI, push notifications, WebSocket, listing edit mobile, image delete, production server, Play Store signing
+- Must-fix before public release ro'yxati yozildi
+- Backend/admin/mobile kodiga yangi feature qo'shilmadi
+- Keyingi qadam (Step 76): Real phone end-to-end pilot test

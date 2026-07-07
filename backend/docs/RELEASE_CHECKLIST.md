@@ -64,3 +64,35 @@
 - [ ] Record environment name
 - [ ] Record rollback plan
 - [ ] Record known limitations from `docs/BACKEND_MVP_AUDIT.md`
+
+## Step 75 — Production Hardening (Added by Audit)
+
+### SMS / OTP
+- [ ] `SMS_PROVIDER` set to `generic` or `eskiz` in production
+- [ ] `SMS_API_BASE_URL`, `SMS_API_TOKEN`, `SMS_API_LOGIN`, `SMS_API_PASSWORD` set via secrets manager or server env (never committed to git)
+- [ ] Verify `devCode`/`devOtp` does NOT appear in production API response (`SMS_PROVIDER != dev`)
+- [ ] OTP code is not logged to stdout in production
+
+### Chat
+- [ ] Chat endpoints restricted to authenticated participants only
+- [ ] Self-chat correctly blocked at backend
+- [ ] Conversations only created on ACTIVE listings
+- [ ] Message body max 2000 chars enforced
+- [ ] All chat endpoints return 401 without valid JWT
+
+### Admin
+- [ ] Admin endpoints return 403 for non-ADMIN users
+- [ ] Swagger disabled in production (`SWAGGER_ENABLED=false`)
+
+### AI
+- [ ] Confirm `AI_PROVIDER=local` for MVP pilot (mock responses)
+- [ ] Document plan for real AI provider integration
+
+### Database
+- [ ] Production database backup strategy defined
+- [ ] `postgres_data` volume on host disk confirmed
+- [ ] Migration rollback plan documented
+
+### Monitoring
+- [ ] Application logs accessible (`npm run docker:prod:logs`)
+- [ ] 500-level error alerting plan defined
