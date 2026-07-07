@@ -112,13 +112,86 @@ Allowed `status` values are `ACTIVE` and `REJECTED`. Only `PENDING` rows show mo
 
 Next step: connect the complaints page.
 
+## Complaints Page
+
+`/complaints` shows admin complaint data from:
+
+- `GET /admin/complaints`
+
+### Query Parameters
+
+| Param  | Type            | Default | Description                      |
+|--------|-----------------|---------|----------------------------------|
+| page   | number (min 1)  | 1       | Page number                      |
+| limit  | number (1–50)   | 10      | Items per page                   |
+| status | ComplaintStatus | OPEN    | Required — always sent to backend |
+
+> **Note:** Backend DTO da `reason` va `search` parametrlari mavjud emas.
+> `status` har doim aniq qiymat bilan yuboriladi (default: `OPEN`).
+
+### UI Filters
+
+- **Status filter** — 4 ta variant: `OPEN`, `IN_REVIEW`, `RESOLVED`, `REJECTED`
+- **"Barchasi"** varianti yo'q — backend barcha statusni bir request da qo'llamaydi
+- **Reason filter UI da yo'q** — backend DTO da `reason` query param qo'llanmaydi
+- Reason faqat jadvalda o'zbekcha **label** sifatida ko'rsatiladi
+
+### Status Values
+
+| Value     | Label              | Badge colour |
+|-----------|--------------------|--------------|
+| OPEN      | Ochiq              | Amber        |
+| IN_REVIEW | Ko'rib chiqilmoqda | Blue         |
+| RESOLVED  | Hal qilingan       | Emerald      |
+| REJECTED  | Rad etilgan        | Slate/grey   |
+
+### Reason Labels (client-side display only)
+
+Backend `reason` fieldi oddiy `String` saqlanadi (Prisma enumi emas).
+Jadvalda o'zbekcha ko'rsatiladi:
+
+| Raw value     | Label              |
+|---------------|--------------------|
+| FRAUD         | Firibgarlik        |
+| SPAM          | Spam               |
+| WRONG_INFO    | Noto'g'ri ma'lumot |
+| INAPPROPRIATE | Nomaqbul kontent   |
+| DUPLICATE     | Takroriy e'lon     |
+| OTHER         | Boshqa             |
+
+Noma'lum qiymatlar raw holida ko'rsatiladi.
+
+### Empty State
+
+Tanlangan statusga mos matn chiqadi:
+- OPEN → "Ochiq shikoyatlar topilmadi."
+- IN_REVIEW → "Ko'rib chiqilayotgan shikoyatlar topilmadi."
+- RESOLVED → "Hal qilingan shikoyatlar topilmadi."
+- REJECTED → "Rad etilgan shikoyatlar topilmadi."
+
+### Table Columns
+
+- Sabab, Status, E'lon, Shikoyatchi, E'lon egasi, Xabar, Sana, Amal
+
+Xabar 90 belgidan uzun bo'lsa qisqartiriladi.
+
+### Pagination
+
+Pastda `Oldingi` / `Keyingi` tugmalari va jami hisobi ko'rsatiladi.
+
+### Next Step (Step 39)
+
+`PATCH /admin/complaints/:id/status` endpointini "Amal" ustuniga ulash — complaint status update action.
+
+
 ## Current Scope
 
 - Login screen connected to backend OTP auth
 - Protected dashboard with real backend totals
-- Protected listings table with filters and pagination
-- Admin layout shell
-- Shared UI primitives
+- Protected listings table with filters, pagination, and moderation
+- Protected complaints table with status filter and pagination
+- Admin layout shell (Sidebar, Header, AdminShell)
+- Shared UI primitives (Badge, Button, Card, Input)
 - API and environment helpers
 
-Next step: connect admin list screens.
+Next step: complaint status update (Step 39).

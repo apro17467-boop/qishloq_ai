@@ -132,3 +132,65 @@ export type ModerateListingResponse = {
     updatedAt?: string;
   };
 };
+
+// ─── Complaints ───────────────────────────────────────────────────────────────
+
+export type ComplaintStatus =
+  | "OPEN"
+  | "IN_REVIEW"
+  | "RESOLVED"
+  | "REJECTED";
+
+/**
+ * Backend schemada reason oddiy String (enum emas).
+ * Ma'lum qiymatlar amalda FRAUD, SPAM, WRONG_INFO, OTHER va h.k. bo'lishi mumkin.
+ */
+export type ComplaintReason = string;
+
+export type AdminComplaint = {
+  id: string;
+  reason: ComplaintReason;
+  message?: string | null;
+  status: ComplaintStatus;
+  createdAt: string;
+  updatedAt?: string | null;
+  listing?: {
+    id: string;
+    title: string;
+    status?: string | null;
+    type?: string | null;
+    contactPhone?: string | null;
+    owner?: {
+      id: string;
+      phone: string;
+      profile?: {
+        fullName?: string | null;
+        avatarUrl?: string | null;
+      } | null;
+    } | null;
+  } | null;
+  reporter?: {
+    id: string;
+    phone: string;
+    role?: string | null;
+    profile?: {
+      fullName?: string | null;
+      avatarUrl?: string | null;
+    } | null;
+  } | null;
+};
+
+/**
+ * Backend AdminComplaintsQueryDto ga mos query.
+ * Qo'llab-quvvatlanadigan paramlar: page, limit, status.
+ * listingId va reporterId ni keyingi qadamlarda ishlatish mumkin.
+ * DIQQAT: Backend DTO da `reason` parametri yo'q – u query ga qo'shilmaydi.
+ * status har doim aniq ComplaintStatus bo'lishi shart (backend default OPEN).
+ */
+export type AdminComplaintsQuery = {
+  page: number;
+  limit: number;
+  status: ComplaintStatus;
+};
+
+export type AdminComplaintsResponse = PaginatedResponse<AdminComplaint>;
